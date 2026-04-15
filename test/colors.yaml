@@ -1,0 +1,28 @@
+qinghai:
+  base: "#77AB58"
+  light: "#95D46F"
+  dark: "#446431"
+bermejo:
+  base: "#E81640"
+  light: "#FC8892"
+  dark: "#8F0924"
+abyad:
+  base: "#CCCCCC"
+  light: "#E0E0E0"
+  dark: "#757575"
+chernoe:
+  base: "#282C34"
+  light: "#70798C"
+  dark: "#1A1D23"
+seohae:
+  base: "#EF9901"
+  light: "#FFC088"
+  dark: "#8D5800"
+baikal:
+  base: "#6495ED"
+  light: "#A8BEF4"
+  dark: "#29579A"
+ianthina:
+  base: "#A465C2"
+  light: "#C6A3DB"
+  dark: "#643978"

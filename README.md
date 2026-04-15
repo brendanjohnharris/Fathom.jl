@@ -1,17 +1,17 @@
-# Foresight.jl
+# Fathom.jl
 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://brendanjohnharris.github.io/Foresight.jl/dev/)
-[![Build Status](https://github.com/brendanjohnharris/Foresight.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/brendanjohnharris/Foresight.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/brendanjohnharris/Foresight.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/brendanjohnharris/Foresight.jl)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://brendanjohnharris.github.io/Fathom.jl/dev/)
+[![Build Status](https://github.com/brendanjohnharris/Fathom.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/brendanjohnharris/Fathom.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/brendanjohnharris/Fathom.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/brendanjohnharris/Fathom.jl)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14511387.svg)](https://doi.org/10.5281/zenodo.14511387)
 
 A Makie theme and some utilities.
 # Usage
 ```Julia
 using CairoMakie
-using Foresight
-foresight() |> Makie.set_theme!
-fig = Foresight.demofigure()
+using Fathom
+fathom() |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 ![demo](test/demos/demo.png)
 
@@ -19,29 +19,29 @@ fig = Foresight.demofigure()
 Any combination of the keywords below can be used to customise the theme.
 ### Dark
 ```Julia
-foresight(:dark, :transparent) |> Makie.set_theme!
-fig = Foresight.demofigure()
+fathom(:dark, :transparent) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 ![demo](test/demos/dark.png)
 
 ### Transparent
 ```Julia
-foresight(:dark, :transparent) |> Makie.set_theme!
-fig = Foresight.demofigure()
+fathom(:dark, :transparent) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 ![demo](test/demos/transparent.png)
 
 ### Serif
 ```Julia
-foresight(:serif) |> Makie.set_theme!
-fig = Foresight.demofigure()
+fathom(:serif) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 ![demo](test/demos/serif.png)
 
 ### Physics
 ```Julia
-foresight(:physics) |> Makie.set_theme!
-fig = Foresight.demofigure()
+fathom(:physics) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 ![demo](test/demos/physics.png)
 
@@ -52,7 +52,7 @@ fig = Foresight.demofigure()
 Add labels to a provided grid layout, automatically searching for blocks to label.
 
 ```julia
-f = Foresight.demofigure()
+f = Fathom.demofigure()
 addlabels!(f)
 display(f)
 ```
@@ -84,12 +84,12 @@ lscientific(1/123.456, 3) # "8.10 \\times 10^{-3}"
 Brighten a color by a given factor by blending it with white:
 
 ```julia
-brighten(:cornflowerblue, 0.2) # Brightens the color by 20%
+brighten(baikal, 0.2) # Brightens the color by 20%
 ```
 
 Or, darken a color by blending it with black:
 ```julia
-darken(:cornflowerblue, 0.2) # Darkens the color by 20%
+darken(baikal, 0.2) # Darkens the color by 20%
 ```
 
 ### widen
@@ -98,7 +98,7 @@ Slightly widens an interval by a fraction δ.
 
 ```julia
 x = (0.0, 1.0)
-wider_interval = Foresight.widen(x, 0.1)
+wider_interval = Fathom.widen(x, 0.1)
 ```
 
 ### freeze!
@@ -121,11 +121,11 @@ clip(fig)
 
 Imports all symbols from a module into the current scope. Use with caution.
 ```julia
-importall(Foresight) .|> eval
+importall(Fathom) .|> eval
 ```
 
 # Colors
-The theme is based on the colors `[cornflowerblue, crimson, cucumber, california, juliapurple]`:
+The theme is based on the colors `[baikal, bermejo, qinghai, seohae, ianthina]`:
 
 ![palette](test/palette.svg)
 
@@ -158,4 +158,4 @@ The following recipes are exported:
 - `hill`
 - `bandwidth`
 
-Details and examples can be found in the [recipes docs](https://brendanjohnharris.github.io/Foresight.jl/dev/recipes/).
+Details and examples can be found in the [recipes docs](https://brendanjohnharris.github.io/Fathom.jl/dev/recipes/).

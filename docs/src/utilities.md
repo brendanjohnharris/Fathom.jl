@@ -1,13 +1,13 @@
 ```@meta
-CurrentModule = Foresight
+CurrentModule = Fathom
 ```
 
-```@setup foresight
+```@setup Fathom
 using CairoMakie
 using CairoMakie.Makie.PlotUtils
 using CairoMakie.Colors
 using Makie
-using Foresight
+using Fathom
 using Makie.IntervalSets
 showable(::MIME"text/plain", ::AbstractVector{C}) where {C<:Colorant} = false
 showable(::MIME"text/plain", ::PlotUtils.ContinuousColorGradient) = false
@@ -19,8 +19,8 @@ showable(::MIME"text/plain", ::PlotUtils.ContinuousColorGradient) = false
 
 Add labels to a provided grid layout, automatically searching for blocks to label.
 
-```@example foresight
-f = Foresight.demofigure()
+```@example Fathom
+f = Fathom.demofigure()
 addlabels!(f)
 display(f)
 ```
@@ -33,7 +33,7 @@ addlabels!
 
 Converts a color gradient into a transparent version.
 
-```@example foresight
+```@example Fathom
 C = cgrad(:viridis)
 transparent_gradient = seethrough(C)
 ```
@@ -46,7 +46,7 @@ seethrough
 
 Generate string representation of a number in scientific notation with a specified number of significant digits.
 
-```@example foresight
+```@example Fathom
 scientific(1/123.456, 3) # "8.10 × 10⁻³"
 ```
 
@@ -56,7 +56,7 @@ scientific
 
 There is also an `lscientific` method, which returns a LaTeX-style string:
 
-```@example foresight
+```@example Fathom
 lscientific(1/123.456, 3)
 ```
 
@@ -66,7 +66,7 @@ lscientific
 
 As well as `Lscientific`, which returns a `LaTeXString`:
 
-```@example foresight
+```@example Fathom
 Lscientific(1/123.456, 3)
 ```
 
@@ -79,7 +79,7 @@ Lscientific
 
 Format tick labels to be as compact as possible:
 
-```@example foresight
+```@example Fathom
 lines(0:sqrt(2)/100:sqrt(2), sqrt; axis=(;xtickformat=terseticks))
 ```
 
@@ -89,7 +89,7 @@ terseticks
 
 Or, format proportion values as percentages:
 
-```@example foresight
+```@example Fathom
 lines(0:0.01:1, sqrt; axis=(;xtickformat=percentageticks))
 ```
 
@@ -111,16 +111,16 @@ reverselegend!
 
 Brighten a color by a given factor by blending it with white:
 
-```@example foresight
-c = cornflowerblue
+```@example Fathom
+c = baikal
 b = brighten(c, 0.2) # Brightens the color by 20%
 cgrad([c, b], categorical=true) # hide
 ```
 
 Or, darken a color by blending it with black:
 
-```@example foresight
-c = cornflowerblue
+```@example Fathom
+c = baikal
 d = darken(c, 0.2) # Darkens the color by 20%
 cgrad([c, d], categorical=true) # hide
 ```
@@ -129,9 +129,9 @@ cgrad([c, d], categorical=true) # hide
 
 Slightly widens an interval by a fraction δ.
 
-```@example foresight
+```@example Fathom
 x = 0..1
-Foresight.widen(x, 0.1)
+Fathom.widen(x, 0.1)
 ```
 
 ```@docs
@@ -165,7 +165,7 @@ clip
 Imports all symbols from a module into the current scope. Use with caution.
 
 ```julia
-importall(Foresight) .|> eval
+importall(Fathom) .|> eval
 ```
 
 ```@docs

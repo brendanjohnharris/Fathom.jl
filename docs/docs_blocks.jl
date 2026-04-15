@@ -47,7 +47,7 @@ function Documenter.Selectors.runner(::Type{AttrdocsBlocks}, node, page, doc)
     codeblock = node.element
     node.element = Container(codeblock)
 
-    type = getproperty(Foresight, Symbol(strip(codeblock.code)))
+    type = getproperty(Fathom, Symbol(strip(codeblock.code)))
 
     (; attrkeys, all_examples, all_docs, all_defaults) = attrs_examples_docs_defaults(type)
 

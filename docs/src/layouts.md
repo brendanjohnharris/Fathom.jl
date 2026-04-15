@@ -1,13 +1,13 @@
 ```@meta
-CurrentModule = Foresight
+CurrentModule = Fathom
 ```
 
-```@setup foresight
+```@setup Fathom
 using CairoMakie
 using CairoMakie.Makie.PlotUtils
 using CairoMakie.Colors
 using Makie
-using Foresight
+using Fathom
 using Makie.IntervalSets
 showable(::MIME"text/plain", ::AbstractVector{C}) where {C<:Colorant} = false
 showable(::MIME"text/plain", ::PlotUtils.ContinuousColorGradient) = false
@@ -27,7 +27,7 @@ subdivide
 
 ### OnePanel
 
-```@example foresight
+```@example Fathom
 f = OnePanel()
 gs = subdivide(f, 1, 1)
 addlabels!(gs)
@@ -36,7 +36,7 @@ f
 
 ### TwoPanel
 
-```@example foresight
+```@example Fathom
 f = TwoPanel()
 gs = subdivide(f, 1, 2)
 addlabels!(gs)
@@ -45,7 +45,7 @@ f
 
 ### FourPanel
 
-```@example foresight
+```@example Fathom
 f = FourPanel()
 gs = subdivide(f, 2, 2)
 addlabels!(gs)
@@ -54,7 +54,7 @@ f
 
 ### SixPanel
 
-```@example foresight
+```@example Fathom
 f = SixPanel()
 gs = subdivide(f, 3, 2)
 addlabels!(gs)

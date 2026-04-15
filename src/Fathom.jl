@@ -1,4 +1,4 @@
-module Foresight
+module Fathom
 
 using Makie
 using Format
@@ -7,14 +7,14 @@ using Random
 using ImageClipboard
 using FileIO
 using Preferences
-using YAML
 using Makie.LaTeXStrings
 import Makie.IntervalSets: Interval
 
-export foresight, importall, freeze!, clip, axiscolorbar,
+export fathom, importall, freeze!, clip, axiscolorbar,
        reverselegend!,
        scientific, lscientific, Lscientific,
-       percentageticks, terseticks
+       percentageticks, terseticks,
+       HSLuv, hsluv, set_hsluv
 
 function __init__()
     ENV["UNITFUL_FANCY_EXPONENTS"] = true
@@ -40,68 +40,105 @@ seethrough(C, args...) = seethrough(cgrad(C), args...)
 seethrough(C::Makie.Color, args...) = seethrough(cgrad([C, C]), args...)
 export seethrough
 
+include("HSLUV.jl")
+using .HSLUV: HSLuv, hsluv, set_hsluv
+
 """
-    brighten(c::T, β)
+    set_luminance(c, l)
 
-Brighten a color `c` by a factor of `β` by blending it with white. `β` should be between 0 and 1.
-
-# Example
-```julia
-brighten(cornflowerblue, 0.5)
-```
+Return a color equal to `c` but with its Oklab lightness replaced by `l`
+(on Oklab's native `L ∈ [0, 1]` scale).
+The chroma coordinates and any alpha channel on `c` are preserved.
 """
-function brighten(c::T, β::AbstractFloat) where {T}
-    b = RGBA(c)
-    b = RGBA(1, 1, 1, b.alpha)
-    cb = cgrad([c, b])
-    return convert(T, cb[β])
-end
-
-function lighten(c, a)
-    c = Makie.to_color(c)
-    c = convert(RGB, c)
-    return RGB((1 - a) + a * c.r), RGB((1 - a) + a * c.g), RGB((1 - a) + a * c.b)
+function set_luminance(c, l::Real)
+    col = Makie.to_color(c)
+    alpha = Colors.alpha(col)
+    rgb = convert(RGB, col)
+    ok = convert(Oklab, rgb)
+    new_l = clamp(Float64(l), 0, 1)
+    new_rgb = convert(RGB, Oklab(new_l, ok.a, ok.b))
+    return RGBA(new_rgb.r, new_rgb.g, new_rgb.b, alpha)
 end
 
 """
-    darken(c::T, β)
+    lighten(c, β)
 
-Darken a color `c` by a factor of `β` by blending it with black. `β` should be between 0 and 1.
-
-# Example
-```julia
-darken(cornflowerblue, 0.5)
-```
+Lighten a color `c` by adding an absolute Oklab lightness shift `β`
+on the native `L ∈ [0, 1]` scale.
+`β = 0` returns the original color.
 """
-function darken(c::T, β::AbstractFloat) where {T}
-    b = RGBA(c)
-    b = RGBA(0, 0, 0, b.alpha)
-    cb = cgrad([c, b])
-    return convert(T, cb[β])
+function lighten(c, β::Real)
+    col = Makie.to_color(c)
+    ok = convert(Oklab, convert(RGB, col))
+    new_l = ok.l + Float64(β)
+    return set_luminance(col, new_l)
 end
-function brighten(c::Symbol, β::AbstractFloat)::RGBA
-    c = Makie.to_color(c)
-    return brighten(c, β)
+
+"""
+    darken(c, β)
+
+Darken a color `c` by subtracting an absolute Oklab lightness shift `β`
+on the native `L ∈ [0, 1]` scale.
+`β = 0` returns the original color.
+"""
+function darken(c, β::Real)
+    col = Makie.to_color(c)
+    ok = convert(Oklab, convert(RGB, col))
+    new_l = ok.l - Float64(β)
+    return set_luminance(col, new_l)
 end
-function darken(c::Symbol, β::AbstractFloat)::RGBA
-    c = Makie.to_color(c)
-    return darken(c, β)
+
+"""
+    darken(c, β, γ)
+
+Darken a color `c` by subtracting an absolute Oklab lightness shift `β`
+and apply a chroma boost `γ` on `[0, 1]` (0 means no boost).
+Useful for richer dark variants that avoid looking washed out.
+"""
+function darken(c, β::Real, γ::Real)
+    col = Makie.to_color(c)
+    alpha = Colors.alpha(col)
+    ok = convert(Oklab, convert(RGB, col))
+    new_l = clamp(ok.l - Float64(β), 0.0, 1.0)
+    chroma_scale = 1.0 + clamp(Float64(γ), 0.0, 1.0)
+    new_rgb = convert(RGB, Oklab(new_l, ok.a * chroma_scale, ok.b * chroma_scale))
+    return RGBA(new_rgb.r, new_rgb.g, new_rgb.b, alpha)
 end
-export brighten, darken
+
+"""
+    pastel(c, β, δ = 0.35)
+
+Create a pastel variant of color `c` by increasing Oklab lightness by `β`
+and reducing chroma by factor `δ` on `[0, 1]`.
+`δ = 0` keeps original chroma, `δ = 1` fully desaturates.
+"""
+function pastel(c, β::Real, δ::Real = 0.35)
+    col = Makie.to_color(c)
+    alpha = Colors.alpha(col)
+    ok = convert(Oklab, convert(RGB, col))
+    new_l = clamp(ok.l + Float64(β), 0.0, 1.0)
+    chroma_scale = 1.0 - clamp(Float64(δ), 0.0, 1.0)
+    new_rgb = convert(RGB, Oklab(new_l, ok.a * chroma_scale, ok.b * chroma_scale))
+    return RGBA(new_rgb.r, new_rgb.g, new_rgb.b, alpha)
+end
+
+const brighten = lighten
+export lighten, darken, brighten, set_luminance, pastel
 
 include("Colors.jl")
+include("Colormaps.jl")
 include("Recipes.jl")
 
 # * A good font
-const foresightfont = "Arial"
-function foresightfonts(font = foresightfont)
+const fathomfont = "Arial"
+function fathomfonts(font = fathomfont)
     Attributes(:regular => font,
                :bold => font * " Bold",
                :italic => font * " Italic",
                :bold_italic => font * " Bold Italic")
 end
 
-foresightfontsize() = 14
+fathomfontsize() = 14
 
 """
 Slightly widen an interval by a fraction δ
@@ -120,7 +157,7 @@ Set the default theme to `thm` and save it as a preference. The change will take
 
 # Example
 ```julia
-    @default_theme!(foresight())
+    @default_theme!(fathom())
 ```
 """
 macro default_theme!(thm)
@@ -128,17 +165,17 @@ macro default_theme!(thm)
         @set_preferences!("default_theme"=>string(thm))
         @info("Default theme set to $thm. Restart Julia for the change to take effect")
     catch e
-        @error "Could not set theme. Reverting to Foresight.jl default"
+        @error "Could not set theme. Reverting to Fathom.jl default"
     end
 end
 export @default_theme!
-_default_theme = @load_preference("default_theme", default="foresight()")
+_default_theme = @load_preference("default_theme", default="fathom()")
 function default_theme()
     try
         eval(Meta.parse(_default_theme))
     catch e
-        @error "Could not load theme. Reverting to Foresight.jl default"
-        return foresight()
+        @error "Could not load theme. Reverting to Fathom.jl default"
+        return fathom()
     end
 end
 
@@ -199,7 +236,7 @@ function demofigure()
     arg = [0, 0, -1.7, 1.5, -0.5, 0.7]
     points = trajectory(Clifford, arg...; n = Int(5e6))
     datashader!(ax, points, async = false,
-                colormap = cgrad([:transparent, cornflowerblue, darkbg], [0, 0.4, 1]))
+                colormap = cgrad([:transparent, baikal, chernoe], [0, 0.4, 1]))
     f
 end
 
@@ -365,9 +402,9 @@ x = Lscientific(1/123.456, 2) # L"8.10 \\times 10^{-3}"
 Lscientific(args...) = LaTeXString(lscientific(args...))
 
 """
-The Foresight colors: `cornflowerblue`, `crimson`, `cucumber`, `california`, `juliapurple`.
+The Fathom colors: `baikal`, `bermejo`, `qinghai`, `seohae`, `ianthina`.
 """
-colors = cgrad([cornflowerblue, crimson, cucumber, california, juliapurple],
+colors = cgrad([baikal, bermejo, qinghai, seohae, ianthina, abyad],
                categorical = true)
 
 colororder = [(c, 0.7) for c in colors]
@@ -375,11 +412,11 @@ palette = (patchcolor = colororder,
            color = colororder,
            strokecolor = colororder)
 
-function _foresight(; globalfonts = foresightfonts(), globalfontsize = foresightfontsize())
+function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize())
     Theme(;
           colormap = sunrise,
           strokewidth = 10.0,
-          strokecolor = :cornflowerblue,
+          strokecolor = baikal,
           strokevisible = true,
           font = :regular,
           fonts = globalfonts,
@@ -476,9 +513,9 @@ function _foresight(; globalfonts = foresightfonts(), globalfontsize = foresight
 end
 
 """
-    foresight(options...; fonts=foresightfonts())
+    fathom(options...; fonts=fathomfonts())
 
-Return the default Foresight theme. The `options` argument can be used to modify the default values, by passing keyword arguments with the names of the attributes to be changed and their new values.
+Return the default Fathom theme. The `options` argument can be used to modify the default values, by passing keyword arguments with the names of the attributes to be changed and their new values.
 
 Some vailable options are:
 - `:dark`: Use a dark background and light text.
@@ -489,22 +526,22 @@ Some vailable options are:
 - `:gray`: Use a grayscale colormap.
 - `:physics`: Set a theme that resembles typical plots in physics journals.
 """
-function foresight(options...; fonts = foresightfonts())
+function fathom(options...; fonts = fathomfonts())
     if fonts isa String || fonts isa Symbol
-        foresightfonts(fonts)
+        fathomfonts(fonts)
     end
     if :serif ∈ options
-        thm = _foresight(; globalfonts = foresightfonts("Times"))
+        thm = _fathom(; globalfonts = fathomfonts("Times"))
     else
-        thm = _foresight(; globalfonts = fonts)
+        thm = _fathom(; globalfonts = fonts)
     end
     options = collect(options)
     options = options[options .!= :serif]
-    _foresight!.((thm,), Val.(options))
+    _fathom!.((thm,), Val.(options))
     return thm
 end
 
-四海 = 遠見 = 四看 = fourseas = foresight
+四海 = 遠見 = 四看 = fourseas = Fathom
 
 function setall!(thm::Attributes, attribute, value)
     thm[attribute] = value
@@ -522,24 +559,24 @@ function setall!(thm::Attributes, attribute, value)
 end
 
 transparent = Makie.RGBA(0, 0, 0, 0)
-function _foresight!(thm::Attributes, ::Val{:transparent})
+function _fathom!(thm::Attributes, ::Val{:transparent})
     setall!(thm, :backgroundcolor, transparent)
     setall!(thm, :yzpanelcolor, transparent)
     setall!(thm, :xzpanelcolor, transparent)
     setall!(thm, :xypanelcolor, transparent)
 end
-function _foresight!(thm::Attributes, ::Val{:minorgrid})
+function _fathom!(thm::Attributes, ::Val{:minorgrid})
     setall!(thm, :xminorgridvisible, true)
     setall!(thm, :yminorgridvisible, true)
     setall!(thm, :zminorgridvisible, true)
 end
-function _foresight!(thm::Attributes, ::Val{:dark})
+function _fathom!(thm::Attributes, ::Val{:dark})
     gridcolor = :gray38
     minorgridcolor = :gray51
-    strokecolor = cornflowerblue
+    strokecolor = baikal
     textcolor = :white
     setall!(thm, :strokecolor, strokecolor)
-    setall!(thm, :backgroundcolor, darkbg)
+    setall!(thm, :backgroundcolor, chernoe)
     setall!(thm, :textcolor, textcolor)
     setall!(thm, :xgridcolor, gridcolor)
     setall!(thm, :ygridcolor, gridcolor)
@@ -554,9 +591,9 @@ function _foresight!(thm::Attributes, ::Val{:dark})
     setall!(thm, :yticklabelcolor, textcolor)
     setall!(thm, :zticklabelcolor, textcolor)
     setall!(thm, :titlecolor, textcolor)
-    setall!(thm, :yzpanelcolor, darkbg)
-    setall!(thm, :xzpanelcolor, darkbg)
-    setall!(thm, :xypanelcolor, darkbg)
+    setall!(thm, :yzpanelcolor, chernoe)
+    setall!(thm, :xzpanelcolor, chernoe)
+    setall!(thm, :xypanelcolor, chernoe)
     setall!(thm, :tickcolor, textcolor)
     setall!(thm, :ticklabelcolor, textcolor)
     setall!(thm, :spinecolor, gridcolor)
@@ -572,7 +609,7 @@ function _foresight!(thm::Attributes, ::Val{:dark})
     thm[:Axis3][:yticksvisible] = false
     thm[:Axis3][:zticksvisible] = false
 end
-function _foresight!(thm::Attributes, ::Val{:physics})
+function _fathom!(thm::Attributes, ::Val{:physics})
     setall!(thm, :topspinevisible, true)
     setall!(thm, :rightspinevisible, true)
     setall!(thm, :bottomspinevisible, true)
@@ -667,12 +704,11 @@ end
 terseticks(x; kwargs...) = terseticks.(x; kwargs...)
 terseticks(; kwargs...) = x -> terseticks(x; kwargs...)
 
-include("RedBlue.jl")
 include("Polar.jl")
 include("Prism.jl")
 include("CovEllipse.jl")
 include("Layouts.jl")
-if haskey(ENV, "FORESIGHT_PATCHES")
+if haskey(ENV, "FATHOM_PATCHES")
     include(joinpath(@__DIR__, "Patches.jl"))
 end
 

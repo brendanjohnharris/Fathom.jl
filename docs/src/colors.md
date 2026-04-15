@@ -1,71 +1,71 @@
 ```@meta
-CurrentModule = Foresight
+CurrentModule = Fathom
 ```
 
-```@setup foresight
+```@setup Fathom
 using CairoMakie
 using CairoMakie.Makie.PlotUtils
 using CairoMakie.Colors
 using Makie
-using Foresight
+using Fathom
 showable(::MIME"text/plain", ::AbstractVector{C}) where {C<:Colorant} = false
 showable(::MIME"text/plain", ::PlotUtils.ContinuousColorGradient) = false
 ```
 
 # Colors
 
-The Foresight colors are `cornflowerblue`, `crimson`, `cucumber`, `california`, `juliapurple`.
+The Fathom colors are `baikal`, `bermejo`, `qinghai`, `seohae`, `ianthina`.
 
-```@example foresight
-Foresight.colors
+```@example Fathom
+Fathom.colors
 ```
 
 # Colormaps
 
 ## Sunrise
 
-```@example foresight
+```@example Fathom
 sunrise # hide
 ```
 
 ## Cyclic Sunrise
 
-```@example foresight
+```@example Fathom
 cyclicsunrise # hide
 ```
 
 ## Sunset
 
-```@example foresight
+```@example Fathom
 sunset # hide
 ```
 
 ## Dark Sunset
 
-```@example foresight
+```@example Fathom
 darksunset # hide
 ```
 
 ## Light Sunset
 
-```@example foresight
+```@example Fathom
 lightsunset # hide
 ```
 
 ## Binary Sunset
 
-```@example foresight
+```@example Fathom
 binarysunset # hide
 ```
 
 ## Cyclic
 
-```@example foresight
+```@example Fathom
 cyclic # hide
 ```
 
 ## Pelagic
 
-```@example foresight
+```@example Fathom
 pelagic # hide
 ```

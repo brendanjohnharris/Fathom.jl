@@ -24,32 +24,32 @@
     --vp-c-text-3: #6a6a6a;
     --vp-c-gray-1: #e0e0e0;
     --vp-c-gray-2: #cccccc;
-    /* greyseas */
+    /* abyad */
     --vp-c-gray-3: #eeeeee;
-    /* _greyseas */
+    /* _abyad */
 
     /* Julia theme colors */
     --vp-c-brand-1: #6495ED;
-    /* cornflowerblue */
+    /* baikal */
     --vp-c-brand-2: #3676E8;
-    /* _cornflowerblue */
+    /* _baikal */
     --vp-c-brand-3: #5080e6;
     --vp-c-accent: #9558b2;
-    /* juliapurple */
+    /* ianthina */
     --vp-c-accent-alt: #7A4493;
-    /* _juliapurple */
+    /* _ianthina */
     --vp-c-danger: #DC143C;
-    /* crimson */
+    /* bermejo */
     --vp-c-danger-alt: #ED365B;
-    /* _crimson */
+    /* _bermejo */
     --vp-c-warning: #EF9901;
-    /* california */
+    /* seohae */
     --vp-c-warning-alt: #FEB025;
-    /* _california */
+    /* _seohae */
     --vp-c-success: #77ab58;
-    /* cucumber */
+    /* qinghai */
     --vp-c-success-alt: #5F8A46;
-    /* _cucumber */
+    /* _qinghai */
     --vp-c-info: #46AF98;
     /* keppel */
     --vp-c-info-alt: #66C2AE;
@@ -59,42 +59,42 @@
 /* Dark theme colors - using Julia theme palette */
 .dark:root {
     --vp-c-bg: #282C34;
-    /* darkbg */
+    /* chernoe */
     --vp-c-bg-alt: #3E4451;
-    /* _darkbg */
+    /* _chernoe */
     --vp-c-bg-soft: #3a3f47;
     --vp-c-text-1: #eeeeee;
-    /* _greyseas */
+    /* _abyad */
     --vp-c-text-2: #cccccc;
-    /* greyseas */
+    /* abyad */
     --vp-c-text-3: #a0a0a0;
     --vp-c-gray-1: #5a6069;
     --vp-c-gray-2: #4a5058;
     --vp-c-gray-3: #3E4451;
-    /* _darkbg */
+    /* _chernoe */
 
     /* Julia theme colors (same for both themes) */
     --vp-c-brand-1: #6495ED;
-    /* cornflowerblue */
+    /* baikal */
     --vp-c-brand-2: #3676E8;
-    /* _cornflowerblue */
+    /* _baikal */
     --vp-c-brand-3: #5080e6;
     --vp-c-accent: #9558b2;
-    /* juliapurple */
+    /* ianthina */
     --vp-c-accent-alt: #7A4493;
-    /* _juliapurple */
+    /* _ianthina */
     --vp-c-danger: #DC143C;
-    /* crimson */
+    /* bermejo */
     --vp-c-danger-alt: #ED365B;
-    /* _crimson */
+    /* _bermejo */
     --vp-c-warning: #EF9901;
-    /* california */
+    /* seohae */
     --vp-c-warning-alt: #FEB025;
-    /* _california */
+    /* _seohae */
     --vp-c-success: #77ab58;
-    /* cucumber */
+    /* qinghai */
     --vp-c-success-alt: #5F8A46;
-    /* _cucumber */
+    /* _qinghai */
     --vp-c-info: #46AF98;
     /* keppel */
     --vp-c-info-alt: #66C2AE;

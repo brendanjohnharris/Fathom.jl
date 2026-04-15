@@ -1,7 +1,7 @@
 using CairoMakie
 using Makie
 import Makie.Linestyle
-using Foresight
+using Fathom
 using Documenter
 using Documenter: Documenter
 using Documenter.MarkdownAST
@@ -12,13 +12,13 @@ using Markdown
 include("docs_blocks.jl")
 
 format = DocumenterVitepress.MarkdownVitepress(;
-                                               repo = "github.com/brendanjohnharris/Foresight.jl",
+                                               repo = "github.com/brendanjohnharris/Fathom.jl",
                                                devbranch = "main",
                                                devurl = "dev")
 
 makedocs(;
          authors = "brendanjohnharris <brendanjohnharris@gmail.com> and contributors",
-         sitename = "Foresight",
+         sitename = "Fathom",
          format,
          pages = ["Home" => "index.md",
              "Colormaps" => "colors.md",
@@ -35,7 +35,7 @@ makedocs(;
              ]])
 
 DocumenterVitepress.deploydocs(;
-                               repo = "github.com/brendanjohnharris/Foresight.jl",
+                               repo = "github.com/brendanjohnharris/Fathom.jl",
                                target = "build", # this is where Vitepress stores its output
                                branch = "gh-pages",
                                devbranch = "main",

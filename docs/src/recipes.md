@@ -1,18 +1,18 @@
 ```@meta
-CurrentModule = Foresight
+CurrentModule = Fathom
 ```
 
-```@setup foresight
+```@setup Fathom
 using CairoMakie
 using CairoMakie.Makie.PlotUtils
 using CairoMakie.Colors
 using Makie
-using Foresight
+using Fathom
 using Statistics
 import Makie.Linestyle
 showable(::MIME"text/plain", ::AbstractVector{C}) where {C<:Colorant} = false
 showable(::MIME"text/plain", ::PlotUtils.ContinuousColorGradient) = false
-Makie.set_theme!(Foresight.foresight())
+Makie.set_theme!(Fathom.fathom())
 ```
 
 
@@ -24,7 +24,7 @@ Makie.set_theme!(Foresight.foresight())
 ziggurat
 ```
 
-```@example foresight
+```@example Fathom
 x = randn(100)
 ziggurat(x)
 ```
@@ -35,7 +35,7 @@ ziggurat(x)
 hill
 ```
 
-```@example foresight
+```@example Fathom
 x = randn(100)
 hill(x)
 ```
@@ -47,7 +47,7 @@ hill(x)
 bandwidth
 ```
 
-```@example foresight
+```@example Fathom
 x = -π:0.1:π
 bandwidth(x, sin.(x); bandwidth = sin.(x))
 ```
@@ -58,7 +58,7 @@ bandwidth(x, sin.(x); bandwidth = sin.(x))
 polarhist
 ```
 
-```@example foresight
+```@example Fathom
 polarhist(randn(1000) .* 2)
 ```
 
@@ -68,7 +68,7 @@ polarhist(randn(1000) .* 2)
 polardensity
 ```
 
-```@example foresight
+```@example Fathom
 polardensity(randn(1000) .* 2;
                  strokewidth = 5,
                  strokecolor = :angle,
@@ -82,7 +82,7 @@ polardensity(randn(1000) .* 2;
 covellipse
 ```
 
-```@example foresight
+```@example Fathom
 xy = randn(100, 2) * [1 1; 0 0.5]
 μ = mean(xy, dims = 1)
 Σ² = cov(xy)
@@ -98,18 +98,18 @@ fig
 prism
 ```
 
-```@example foresight
+```@example Fathom
 ys = sin.((0:0.001:(π * 1.5)) .+ (0.1:0.1:(2π))')
 Σ² = cov(ys .+ randn(size(ys)) ./ 10; dims = 1)
-H = prism(Σ²; palette = [cornflowerblue, crimson]) # Generates the prism colors
+H = prism(Σ²; palette = [baikal, bermejo]) # Generates the prism colors
 
 f = Figure()
 limits = (0, maximum(abs.(Σ²))) # You must set the limits manually
 g, ax = prismplot!(f[1, 1], H; limits, colorbarlabel = "Covariance magnitude")
 axislegend(ax,
             [
-                PolyElement(color = (cornflowerblue, 0.7)),
-                PolyElement(color = (crimson, 0.7))
+                PolyElement(color = (baikal, 0.7)),
+                PolyElement(color = (bermejo, 0.7))
             ],
             ["PC 1", "PC 2"], position = :lt)
 ax.xlabel = ax.ylabel = "Variable"

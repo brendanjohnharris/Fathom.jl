@@ -1,50 +1,50 @@
 ```@meta
-CurrentModule = Foresight
+CurrentModule = Fathom
 ```
 
-```@setup foresight
+```@setup Fathom
 using CairoMakie
 using CairoMakie.Makie.PlotUtils
 using CairoMakie.Colors
 using Makie
-using Foresight
+using Fathom
 ```
 
-# Foresight
+# Fathom
 
-Documentation for [Foresight](https://github.com/brendanjohnharris/Foresight.jl); a Makie theme and some utilities.
+Documentation for [Fathom](https://github.com/brendanjohnharris/Fathom.jl); a Makie theme and some utilities.
 
 
 ## Default theme
-```@example foresight
+```@example Fathom
 using CairoMakie
-using Foresight
-foresight() |> Makie.set_theme!
-fig = Foresight.demofigure()
+using Fathom
+fathom() |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 
 ## Theme options
 Any combination of the keywords below can be used to customise the theme.
 ### Dark
-```@example foresight
-foresight(:dark, :transparent) |> Makie.set_theme!
-fig = Foresight.demofigure()
+```@example Fathom
+fathom(:dark, :transparent) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 
 ### Transparent
-```@example foresight
-foresight(:dark, :transparent) |> Makie.set_theme!
-fig = Foresight.demofigure()
+```@example Fathom
+fathom(:dark, :transparent) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 
 ### Serif
-```@example foresight
-foresight(:serif) |> Makie.set_theme!
-fig = Foresight.demofigure()
+```@example Fathom
+fathom(:serif) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```
 
 ### Physics
-```@example foresight
-foresight(:physics) |> Makie.set_theme!
-fig = Foresight.demofigure()
+```@example Fathom
+fathom(:physics) |> Makie.set_theme!
+fig = Fathom.demofigure()
 ```

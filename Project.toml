@@ -1,7 +1,7 @@
-name = "Foresight"
-uuid = "c6e1034d-1844-4b96-abf2-c5824a5aa8c3"
+name = "Fathom"
+uuid = "05518021-a905-466c-bf96-cf0c89e1b0a0"
 authors = ["brendanjohnharris <brendanjohnharris@gmail.com>"]
-version = "0.4.1"
+version = "0.1.0"
 
 [deps]
 Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
@@ -14,7 +14,6 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
-YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [workspace]
 projects = ["test"]
@@ -28,5 +27,4 @@ ImageClipboard = "0.1"
 Makie = "0.24"
 Preferences = "1"
 Requires = "1"
-YAML = "0.4"
 julia = "1.10"
