@@ -473,7 +473,7 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
           Lines = (; linecap = :round,
                    joinstyle = :round),
           Hist = (;),
-          Violin = (; cycle = Cycle([:patchcolor, :strokecolor], covary = true)),
+          Violin = (; cycle = Cycle([:patchcolor, :strokecolor, :color], covary = true)),
           Density = (; strokewidth = 5,
                      cycle = Cycle([:color, :strokecolor], covary = true)),
           Label = (; valign = :top, halign = :left, font = :bold,

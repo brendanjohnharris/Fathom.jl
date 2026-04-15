@@ -1,6 +1,7 @@
 using Fathom
 using Test
 using CairoMakie
+import CairoMakie: Oklab, Oklch
 
 # Keep this simple: sample each continuous gradient and render two heatmap strips.
 gradient_items = collect(pairs(Fathom.fathom_colormaps))

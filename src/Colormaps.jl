@@ -37,7 +37,12 @@ oklab(c::Colorant) = Oklab(c)
 lchuv(c) = c |> values |> collect .|> LCHuv
 lchuv(c::Colorant) = LCHuv(c)
 
-const pelagic = cgrad(PELAGIC_COLORS |> oklch, [0, 0.35, 0.6, 0.78, 1])
+pelagic_stops = map(PELAGIC_COLORS |> reverse) do c
+    oklch(c).l
+end |> values
+pelagic_stops = pelagic_stops .- minimum(pelagic_stops)
+pelagic_stops = pelagic_stops ./ maximum(pelagic_stops)
+const pelagic = cgrad(reverse(PELAGIC_COLORS) |> oklch, pelagic_stops) |> reverse
 
 const cyclic = cgrad([chernoe,
                          bermejo,

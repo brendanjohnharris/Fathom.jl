@@ -1,4 +1,5 @@
 # const GRADIENT_LUMINANCE = 60
+const BASE_LIGHT_OFFSET = 3
 const LIGHT_SHIFT = 0.2
 const DARK_SHIFT = 0.3
 const LIGHT_DESATURATE = 0.4
@@ -38,27 +39,27 @@ in Oklab lightness with a mild chroma boost [`DARK_SATURATE`](@ref).
 dark(c) = darken(c, DARK_SHIFT, DARK_SATURATE)
 
 const cornflowerblue = colorant"#6495ED"
-const baikal = set_oklab(cornflowerblue; l = 63) # Baikal sea, beautiful clear blue; the blue eye of siberia
+const baikal = set_oklab(cornflowerblue; l = 63 .+ BASE_LIGHT_OFFSET) # Baikal sea, beautiful clear blue; the blue eye of siberia
 export baikal
 
 const crimson = colorant"#DC143C"
-const bermejo = set_oklab(crimson; l = 53.0) # Mar Bermejo (Vermilion sea, Gulf of California; spanish)
+const bermejo = set_oklab(crimson; l = 53.0 .+ BASE_LIGHT_OFFSET) # Mar Bermejo (Vermilion sea, Gulf of California; spanish)
 export bermejo
 
 const cucumber = colorant"#77ab58"
-const qinghai = set_oklab(cucumber; l = 68) # Qinghai sea; blue or green/jade (qing; Mandarin)
+const qinghai = set_oklab(cucumber; l = 68 .+ BASE_LIGHT_OFFSET) # Qinghai sea; blue or green/jade (qing; Mandarin)
 export qinghai
 
 const californian = colorant"#EF9901"
-const seohae = set_oklab(californian; l = 78) # Yellow sea; Korean West sea (seohae)
+const seohae = set_oklab(californian; l = 78 .+ BASE_LIGHT_OFFSET) # Yellow sea; Korean West sea (seohae)
 export seohae
 
 const juliapurple = colorant"#9558b2"
-const ianthina = set_oklab(juliapurple; l = 58) # Purple sea snail (Janthina)
+const ianthina = set_oklab(juliapurple; l = 58 .+ BASE_LIGHT_OFFSET) # Purple sea snail (Janthina)
 export ianthina
 
 const greyseas = colorant"#cccccc" # White [sea] (the mediterranean; Arabic, al-Baḥr al-Abyaḍ)
-const abyad = set_oklab(greyseas; l = 73)
+const abyad = set_oklab(greyseas; l = 73 .+ BASE_LIGHT_OFFSET)
 export abyad
 
 const chernoe = colorant"#282C34" # Black sea (chernoe more); Russian
