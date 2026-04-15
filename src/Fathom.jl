@@ -13,7 +13,7 @@ import Makie.IntervalSets: Interval
 export fathom, importall, freeze!, clip, axiscolorbar,
        reverselegend!,
        scientific, lscientific, Lscientific,
-       percentageticks, terseticks,
+       percentageticks, terseticks
 
 function __init__()
     ENV["UNITFUL_FANCY_EXPONENTS"] = true
@@ -57,58 +57,13 @@ function set_luminance(c, l::Real)
 end
 
 """
-    lighten(c, β)
+    lighten(c, β, δ = 0)
 
-Lighten a color `c` by adding an absolute Oklab lightness shift `β`
-on the native `L ∈ [0, 1]` scale.
-`β = 0` returns the original color.
-"""
-function lighten(c, β::Real)
-    col = Makie.to_color(c)
-    ok = convert(Oklab, convert(RGB, col))
-    new_l = ok.l + Float64(β)
-    return set_luminance(col, new_l)
-end
-
-"""
-    darken(c, β)
-
-Darken a color `c` by subtracting an absolute Oklab lightness shift `β`
-on the native `L ∈ [0, 1]` scale.
-`β = 0` returns the original color.
-"""
-function darken(c, β::Real)
-    col = Makie.to_color(c)
-    ok = convert(Oklab, convert(RGB, col))
-    new_l = ok.l - Float64(β)
-    return set_luminance(col, new_l)
-end
-
-"""
-    darken(c, β, γ)
-
-Darken a color `c` by subtracting an absolute Oklab lightness shift `β`
-and apply a chroma boost `γ` on `[0, 1]` (0 means no boost).
-Useful for richer dark variants that avoid looking washed out.
-"""
-function darken(c, β::Real, γ::Real)
-    col = Makie.to_color(c)
-    alpha = Colors.alpha(col)
-    ok = convert(Oklab, convert(RGB, col))
-    new_l = clamp(ok.l - Float64(β), 0.0, 1.0)
-    chroma_scale = 1.0 + clamp(Float64(γ), 0.0, 1.0)
-    new_rgb = convert(RGB, Oklab(new_l, ok.a * chroma_scale, ok.b * chroma_scale))
-    return RGBA(new_rgb.r, new_rgb.g, new_rgb.b, alpha)
-end
-
-"""
-    pastel(c, β, δ = 0.35)
-
-Create a pastel variant of color `c` by increasing Oklab lightness by `β`
+Create a lightened variant of color `c` by increasing Oklab lightness by `β`
 and reducing chroma by factor `δ` on `[0, 1]`.
 `δ = 0` keeps original chroma, `δ = 1` fully desaturates.
 """
-function pastel(c, β::Real, δ::Real = 0.35)
+function lighten(c, β::Real, δ::Real = 0)
     col = Makie.to_color(c)
     alpha = Colors.alpha(col)
     ok = convert(Oklab, convert(RGB, col))
@@ -118,8 +73,25 @@ function pastel(c, β::Real, δ::Real = 0.35)
     return RGBA(new_rgb.r, new_rgb.g, new_rgb.b, alpha)
 end
 
+"""
+    darken(c, β, γ)
+
+Darken a color `c` by subtracting an absolute Oklab lightness shift `β`
+and apply a chroma boost `γ` on `[0, 1]` (0 means no boost).
+Useful for richer dark variants that avoid looking washed out.
+"""
+function darken(c, β::Real, γ::Real = 0)
+    col = Makie.to_color(c)
+    alpha = Colors.alpha(col)
+    ok = convert(Oklab, convert(RGB, col))
+    new_l = clamp(ok.l - Float64(β), 0.0, 1.0)
+    chroma_scale = 1.0 + clamp(Float64(γ), 0.0, 1.0)
+    new_rgb = convert(RGB, Oklab(new_l, ok.a * chroma_scale, ok.b * chroma_scale))
+    return RGBA(new_rgb.r, new_rgb.g, new_rgb.b, alpha)
+end
+
 const brighten = lighten
-export lighten, darken, brighten, set_luminance, pastel
+export lighten, darken, brighten, set_luminance
 
 include("Colors.jl")
 include("Colormaps.jl")

@@ -27,7 +27,7 @@ Return the light pastel variant of a color `c`, using
 [`LIGHT_SHIFT`](@ref) in Oklab lightness and
 [`LIGHT_DESATURATE`](@ref) chroma reduction.
 """
-light(c) = pastel(c, LIGHT_SHIFT, LIGHT_DESATURATE)
+light(c) = lighten(c, LIGHT_SHIFT, LIGHT_DESATURATE)
 
 """
     dark(c)
