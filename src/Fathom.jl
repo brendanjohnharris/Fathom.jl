@@ -14,7 +14,6 @@ export fathom, importall, freeze!, clip, axiscolorbar,
        reverselegend!,
        scientific, lscientific, Lscientific,
        percentageticks, terseticks,
-       HSLuv, hsluv, set_hsluv
 
 function __init__()
     ENV["UNITFUL_FANCY_EXPONENTS"] = true
@@ -39,9 +38,6 @@ end
 seethrough(C, args...) = seethrough(cgrad(C), args...)
 seethrough(C::Makie.Color, args...) = seethrough(cgrad([C, C]), args...)
 export seethrough
-
-include("HSLUV.jl")
-using .HSLUV: HSLuv, hsluv, set_hsluv
 
 """
     set_luminance(c, l)

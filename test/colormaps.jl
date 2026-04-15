@@ -21,10 +21,9 @@ for (i, (name, cmap)) in enumerate(gradient_items)
     # Sample the continuous gradient directly.
     grad_colors = cmap[sample_t]
     luminance_only = map(grad_colors) do col
-        # Sampled colormap entries are typically RGBA; convert through RGB
-        # before rebuilding a typed HSLuv grayscale variant.
-        hc = hsluv(col)
-        HSLuv{Float64}(hc.h, 0.0, hc.l)
+        # Preserve perceptual lightness and remove chroma in Oklab space.
+        oc = convert(Oklab{Float64}, col)
+        Oklab{Float64}(oc.l, 0.0, 0.0)
     end |> cgrad
 
     vals = repeat(reshape(collect(1:nsteps), 1, nsteps), strip_rows, 1)
