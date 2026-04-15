@@ -68,13 +68,12 @@ const BASE_COLORS = (; baikal, bermejo, qinghai, seohae, ianthina, abyad, cherno
 const LIGHT_COLORS = map(light, BASE_COLORS)
 const DARK_COLORS = map(dark, BASE_COLORS)
 
-__bermejo = bermejo # brighten(bermejo, 0.1)
-__seohae = seohae # darken(seohae, 0.1)
-
 const epipelagic = colorant"#FA9F42"
 const mesopelagic = colorant"#007878"
 const bathypelagic = colorant"#023653"
 const abyssopelagic = colorant"#280137"
 const PELAGIC_COLORS = (; epipelagic, mesopelagic, bathypelagic, abyssopelagic)
+const DARK_PELAGIC = map(dark, PELAGIC_COLORS)
+const LIGHT_PELAGIC = map(light, PELAGIC_COLORS)
 
 export epipelagic, mesopelagic, bathypelagic, abyssopelagic

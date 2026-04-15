@@ -16,6 +16,11 @@ for (name, base) in pairs(Fathom.BASE_COLORS)
                               "light" => tohex(Fathom.light(base)),
                               "dark" => tohex(Fathom.dark(base)))
 end
+for (name, base) in pairs(Fathom.PELAGIC_COLORS)
+    data[String(name)] = Dict("base" => tohex(base),
+                              "light" => tohex(Fathom.light(base)),
+                              "dark" => tohex(Fathom.dark(base)))
+end
 
 path = joinpath(@__DIR__, "colors.yaml")
 YAML.write_file(path, data)
@@ -23,6 +28,13 @@ YAML.write_file(path, data)
 
 loaded = YAML.load_file(path)
 for (name, _) in pairs(Fathom.BASE_COLORS)
+    key = String(name)
+    @test haskey(loaded, key)
+    @test haskey(loaded[key], "base")
+    @test haskey(loaded[key], "light")
+    @test haskey(loaded[key], "dark")
+end
+for (name, _) in pairs(Fathom.PELAGIC_COLORS)
     key = String(name)
     @test haskey(loaded, key)
     @test haskey(loaded[key], "base")

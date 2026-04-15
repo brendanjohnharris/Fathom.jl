@@ -1,15 +1,27 @@
-qinghai:
-  base: "#75A956"
-  light: "#C2E3B1"
-  dark: "#1B5100"
-bermejo:
-  base: "#CD0030"
-  light: "#F08685"
-  dark: "#660000"
 abyad:
   base: "#A8A8A8"
   light: "#E8E8E8"
   dark: "#505050"
+mesopelagic:
+  base: "#007878"
+  light: "#7DAFAE"
+  dark: "#002628"
+bathypelagic:
+  base: "#023653"
+  light: "#526C7F"
+  dark: "#010008"
+bermejo:
+  base: "#CD0030"
+  light: "#F08685"
+  dark: "#660000"
+ianthina:
+  base: "#995CB6"
+  light: "#CCA7DF"
+  dark: "#44005E"
+qinghai:
+  base: "#75A956"
+  light: "#C2E3B1"
+  dark: "#1B5100"
 chernoe:
   base: "#282C34"
   light: "#5E6167"
@@ -22,7 +34,11 @@ baikal:
   base: "#5787DE"
   light: "#A9C8FF"
   dark: "#002A83"
-ianthina:
-  base: "#995CB6"
-  light: "#CCA7DF"
-  dark: "#44005E"
+epipelagic:
+  base: "#FA9F42"
+  light: "#FFEBB9"
+  dark: "#9A3E00"
+abyssopelagic:
+  base: "#280137"
+  light: "#564061"
+  dark: "#010005"
