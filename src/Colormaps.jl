@@ -71,10 +71,16 @@ const sunset = cgrad([bermejo,
                          baikal] |> lchuv, [0, 0.65, 1])
 
 const sunrise = cgrad([bermejo,
-                          seohae,
+                          ianthina,
+                          baikal,
                           qinghai,
-                          baikal] |> oklch,
-                      [0.25, 0.4, 0.6, 0.75])
+                          seohae] |> oklch,
+                      [0, 0.3, 0.5, 0.75, 1])
+# const sunrise = cgrad([bermejo,
+#                           seohae,
+#                           qinghai,
+#                           baikal] |> oklch,
+#                       [0, 0.3, 0.65, 1])
 
 const cyclicsunrise = cgrad([
                                 seohae,

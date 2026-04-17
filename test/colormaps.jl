@@ -5,14 +5,14 @@ import CairoMakie: Oklab, Oklch
 
 # Keep this simple: sample each continuous gradient and render two heatmap strips.
 gradient_items = collect(pairs(Fathom.fathom_colormaps))
-ncols = 4
-nrows = 2
+ncols = 2
+nrows = 4
 @test length(gradient_items) == ncols * nrows
 
 nsteps = 256
 sample_t = LinRange(0, 1, nsteps)
 strip_rows = 14
-fg = Figure(size = (1200, 400))
+fg = Figure(size = (600, 800))
 
 for (i, (name, cmap)) in enumerate(gradient_items)
     r = fld(i - 1, ncols) + 1

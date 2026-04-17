@@ -26,25 +26,33 @@ end
 """
     ziggurat(x; kwargs...)
 
-Plots a histogram with a transparent fill.
+Plots a histogram with a transparent fill and a stepped outline.
 
 ## Key attributes:
-`linecolor` = `automatic`: Sets the color of the step outline.
-
 `color` = `@inherit patchcolor`: Color of the interior fill.
+
+`strokecolor` = `@inherit patchstrokecolor`: Color of the step outline.
+
+`strokewidth` = `@inherit patchstrokewidth`: Width of the step outline.
+
+`linestyle` = `nothing`: Line pattern of the step outline.
 
 `fillalpha` = `0.5`: Transparency of the interior fill.
 
 `filternan` = `true`: Whether to remove NaN values from the data before plotting.
 """
 @recipe Ziggurat (x,) begin
-    cycle = :color => :patchcolor
-
-    "Color of the histogram steps"
-    linecolor = automatic
-
-    "Color of the histogram fill"
+    "Sets the color of the histogram fill."
     color = @inherit patchcolor
+
+    "Sets the color of the histogram outline."
+    strokecolor = @inherit patchstrokecolor
+    "Sets the linewidth of the histogram outline."
+    strokewidth = @inherit patchstrokewidth
+    "Sets the line pattern of the histogram outline."
+    linestyle = nothing
+    "Controls whether the outline draws around the complete histogram (true) or just the top steps (false)."
+    strokearound = false
 
     "Transparency of the histogram fill"
     fillalpha = 0.5
@@ -52,16 +60,11 @@ Plots a histogram with a transparent fill.
     "Whether to remove NaN values"
     filternan = true
 
-    get_drop_attrs(Hist, [:cycle, :color, :linecolor])...
-    get_drop_attrs(StepHist, attribute_names(Hist))...
+    get_drop_attrs(Hist, [:cycle, :color, :strokecolor, :strokewidth])...
+    get_drop_attrs(StepHist, [attribute_names(Hist)..., :linestyle])...
 end
 
 function Makie.plot!(plot::Ziggurat{<:Tuple{AbstractVector{<:Real}}})
-    # * Stroke color is the same as fill color if left automatic
-    map!(plot.attributes, [:color, :linecolor], :real_linecolor) do color, linecolor
-        return Makie.to_color(linecolor === automatic ? color : linecolor)
-    end
-
     map!(plot.attributes, [:x, :filternan], :values) do v, filternan
         filternan ? filter(!isnan, v) : v
     end
@@ -69,61 +72,33 @@ function Makie.plot!(plot::Ziggurat{<:Tuple{AbstractVector{<:Real}}})
         Makie.to_color(isnothing(a) ? c : (c, a))
     end
 
-    hist!(plot, plot.attributes, plot.x; color = plot.fillcoloralpha)
-    stephist!(plot, plot.attributes, plot.x; color = plot.real_linecolor)
-    plot
-end
+    hist!(plot, plot.attributes, plot.x; color = plot.fillcoloralpha, strokewidth = 0)
+    stephist!(plot, plot.attributes, plot.x; color = plot.strokecolor,
+              linestyle = plot.linestyle, linewidth = plot.strokewidth,
+              visible = map(!, plot.strokearound))
 
-"""
-    hill(x; kwargs...)
-
-Plots a density with a transparent fill.
-
-## Key attributes:
-`color` = `@inherit patchcolor`: Color of the interior fill.
-
-`fillalpha` = `0.5`: Transparency of the interior fill.
-
-`filternan` = `true`: Whether to remove NaN values from the data before plotting.
-
-`strokecolor` = `automatic`: Color of the outline stroke.
-
-`strokewidth` = `1`: Width of the outline stroke.
-"""
-@recipe Hill (x,) begin
-    cycle = :color => :patchcolor
-
-    "Transparency of the fill patch"
-    fillalpha = 0.5
-
-    "Whether to remove NaN values"
-    filternan = true
-
-    "Color of the density fill"
-    color = @inherit patchcolor
-
-    "Color of the density stroke"
-    strokecolor = automatic
-
-    strokewidth = @inherit linewidth
-
-    get_drop_attrs(Density, [:cycle, :color, :strokecolor, :strokewidth])...
-end
-
-function Makie.plot!(plot::Hill{<:Tuple{AbstractVector{<:Real}}})
-    # * Stroke color is the same as fill color if left automatic
-    map!(plot.attributes, [:color, :strokecolor], :real_strokecolor) do color, strokecolor
-        return Makie.to_color(strokecolor === automatic ? color : strokecolor)
+    # Build a closed step path when strokearound is true
+    map!(plot.attributes, [:x, :strokearound, :bins], :linepoints) do x, strokearound, bins
+        if !strokearound || isempty(x)
+            return Point2f[]
+        end
+        h = StatsBase.fit(StatsBase.Histogram, x; nbins = bins)
+        edges = h.edges[1]
+        weights = h.weights
+        ps = Point2f[]
+        push!(ps, Point2f(first(edges), 0))
+        for i in eachindex(weights)
+            push!(ps, Point2f(edges[i], weights[i]))
+            push!(ps, Point2f(edges[i + 1], weights[i]))
+        end
+        push!(ps, Point2f(last(edges), 0))
+        push!(ps, Point2f(first(edges), 0))
+        return ps
     end
+    lines!(plot, plot.linepoints; color = plot.strokecolor,
+           linestyle = plot.linestyle, linewidth = plot.strokewidth,
+           visible = plot.strokearound)
 
-    map!(plot.attributes, [:x, :filternan], :values) do v, filternan
-        filternan ? filter(!isnan, v) : v
-    end
-    map!(plot.attributes, [:color, :fillalpha], :fillcoloralpha) do c, a
-        Makie.to_color(isnothing(a) ? c : (c, a))
-    end
-    density!(plot, plot.attributes, plot.x; color = plot.fillcoloralpha,
-             strokecolor = plot.real_strokecolor)
     plot
 end
 

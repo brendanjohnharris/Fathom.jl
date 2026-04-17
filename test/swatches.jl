@@ -8,13 +8,20 @@ base_colors = sort(collect(pairs(Fathom.BASE_COLORS)); by = p -> oklab_l(p[2]), 
 dark_colors = sort(collect(pairs(Fathom.DARK_COLORS)); by = p -> oklab_l(p[2]), rev = true)
 light_colors = sort(collect(pairs(Fathom.LIGHT_COLORS)); by = p -> oklab_l(p[2]),
                     rev = true)
+                    
+lighter_colors = sort(collect(pairs(Fathom.LIGHTER_COLORS)); by = p -> oklab_l(p[2]),
+                      rev = true)
+darker_colors = sort(collect(pairs(Fathom.DARKER_COLORS)); by = p -> oklab_l(p[2]),
+                     rev = true)
 pelagic_colors = sort(collect(pairs(Fathom.PELAGIC_COLORS)); by = p -> oklab_l(p[2]),
                       rev = true)
 
 grouped_colors = [
     ("Base colors", base_colors),
     ("Dark variants", dark_colors),
+    ("Darker variants", darker_colors),
     ("Light variants", light_colors),
+    ("Lighter variants", lighter_colors),
     ("Pelagic colors", pelagic_colors)
 ]
 

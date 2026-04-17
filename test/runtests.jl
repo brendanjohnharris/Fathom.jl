@@ -50,17 +50,6 @@ end
     display(f)
 end
 
-@testitem "Hill plot" setup=[Setup] begin
-    x = randn(1000)
-    y = randn(1000) .+ 2
-    f = Figure()
-    ax = Axis(f[1, 1])
-    hill!(ax, x .- 1)
-    hill!(ax, x)
-    hill!(ax, y; color = :red, bandwidth = 0.01, strokewidth = 5)
-    display(f)
-end
-
 @testitem "Bandwidth plot" setup=[Setup] begin
     x = range(-4π, 4π, length = 1000)
     y = sinc.(x)
@@ -113,7 +102,7 @@ end
     @test_nowarn display(f)
 
     f = Fathom.demofigure()
-    @test_nowarn addlabels!(f, string.(1:6))
+    @test_nowarn addlabels!(f, string.(1:9))
     @test_nowarn display(f)
 
     f = Fathom.demofigure()
@@ -147,7 +136,7 @@ end
     addlabels!(f)
     save("./demos/physics.png", f, px_per_unit = 5)
 
-    save("./palette.svg", cgrad(first.(Fathom.palette[1]), categorical = true))
+    save("./palette.svg", cgrad(Fathom.colororder, categorical = true))
 
     for (name, c) in Fathom.fathom_colormaps
         save("./colormaps/$name.svg", c)
@@ -174,7 +163,7 @@ end
 @testitem "Colormaps" setup=[Setup] begin
     include("./colormaps.jl")
 end
-p
+
 @testitem "Prism plots" setup=[Setup] begin
     f = 1:100
     x = randn(1000, 4)

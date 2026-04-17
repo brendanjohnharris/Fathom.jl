@@ -97,13 +97,23 @@ include("Colors.jl")
 include("Colormaps.jl")
 include("Recipes.jl")
 
-# * A good font
-const fathomfont = "Arial"
+# * Bundled Source Sans 3 font
+const FONT_DIR = joinpath(@__DIR__, "..", "fonts")
+const fathomfont = joinpath(FONT_DIR, "SourceSans3-Regular.ttf")
+
 function fathomfonts(font = fathomfont)
-    Attributes(:regular => font,
-               :bold => font * " Bold",
-               :italic => font * " Italic",
-               :bold_italic => font * " Bold Italic")
+    if isfile(font)
+        dir = dirname(font)
+        Attributes(:regular => font,
+                   :bold => joinpath(dir, "SourceSans3-Bold.ttf"),
+                   :italic => joinpath(dir, "SourceSans3-It.ttf"),
+                   :bold_italic => joinpath(dir, "SourceSans3-BoldIt.ttf"))
+    else
+        Attributes(:regular => font,
+                   :bold => font * " Bold",
+                   :italic => font * " Italic",
+                   :bold_italic => font * " Bold Italic")
+    end
 end
 
 fathomfontsize() = 14
@@ -154,43 +164,54 @@ Produce a figure showcasing the current theme.
 """
 function demofigure()
     Random.seed!(32)
-    f = Figure(size = (1080, 640))
-    ax = Axis(f[1, 1], title = "Measurements", xlabel = "Time (s)", ylabel = "Amplitude")
+    f = NinePanel()
+    gs = subdivide(f, 3, 3)
+
+    # * Lines
+    ax = Axis(gs[1][1, 1], title = "Measurements", xlabel = "Time (s)",
+              ylabel = "Amplitude")
     labels = [L"\alpha", L"\beta", L"\gamma", L"\delta", L"\epsilon", L"\zeta"]
     for i in 1:6
         y = cumsum(randn(10)) .* (isodd(i) ? 1 : -1)
         lines!(y, label = labels[i])
         # scatter!(y, label = labels[i])
     end
-    Legend(f[1, 2], ax, "Legend", merge = true, nbanks = 2)
-    Axis3(f[1, 3], viewmode = :stretch, zlabeloffset = 40, title = "Variable: σ ⤆ τ")
-    s = Makie.surface!(0:0.5:10, 0:0.5:10, (x, y) -> sqrt(x * y) + sin(1.5x),
-                       colormap = seethrough(sunrise, 0.9, 0.1))
-    Colorbar(f[1, 4], s, label = "Intensity")
-    ax = Axis(f[2, 1:2], title = "Hill plots", xlabel = "Height (m)",
-              ylabel = "Density")
-    for i in 1:6
-        y = randn(200) .+ 2i
-        hill!(y)
-    end
-    tightlimits!(ax, Bottom())
-    Makie.xlims!(ax, -1, 15)
-    Axis(f[2, 3:4], title = "Stock performance", xticks = (1:6, labels), xlabel = "Company",
-         ylabel = "Gain (\$)")
-    for i in 1:6
-        data = randn(1)
-        barplot!([i], data)
-        rangebars!([i], data .- 0.2, data .+ 0.2, color = :gray41)
-    end
+    Legend(gs[1][1, 2], ax, "Legend", merge = true, nbanks = 2)
 
-    ax = Makie.Axis(f[1, 5], title = "Ziggurat plots")
+    # * Surface
+    Axis3(gs[2][1, 1], viewmode = :stretch, zlabeloffset = 40, title = "Variable: σ ⤆ τ")
+    s = Makie.surface!(0:0.5:10, 0:0.5:10, (x, y) -> sqrt(x * y) + sin(1.5x))
+    Colorbar(gs[2][1, 2], s, label = "Intensity")
+
+    # * Ziggurat
+    ax = Makie.Axis(gs[3], title = "Ziggurat plots")
     tightlimits!(ax)
     for i in 1:3
         y = randn(200) .+ 2i
         ziggurat!(y)
     end
 
-    ax = Makie.Axis(f[2, 5], title = "Strange attractor") # From the Makie docs for datashader
+    # * Density
+    ax = Axis(gs[4], title = "Density plots", xlabel = "Height (m)",
+              ylabel = "Density")
+    for i in 1:6
+        y = randn(200) .+ 2i
+        density!(y)
+    end
+    tightlimits!(ax, Bottom())
+    Makie.xlims!(ax, -1, 15)
+
+    # * Bars
+    Axis(gs[5], title = "Stock performance", xticks = (1:6, labels), xlabel = "Company",
+         ylabel = "Gain (\$)")
+    for i in 1:6
+        data = randn(1)
+        barplot!([i], data)
+        rangebars!([i], data .- 0.2, data .+ 0.2)
+    end
+
+    # * Datashader
+    ax = Makie.Axis(gs[6], title = "Strange attractor") # From the Makie docs for datashader
     function trajectory(fn, x0, y0, kargs...; n = 1000) #  kargs = a, b, c, d
         xy = zeros(Point2f, n + 1)
         xy[1] = Point2f(x0, y0)
@@ -202,9 +223,35 @@ function demofigure()
     Clifford((x, y), a, b, c, d) = Point2f(sin(a * y) + c * cos(a * x),
                                            sin(b * x) + d * cos(b * y))
     arg = [0, 0, -1.7, 1.5, -0.5, 0.7]
-    points = trajectory(Clifford, arg...; n = Int(5e6))
+    points = trajectory(Clifford, arg...; n = Int(5e5))
     datashader!(ax, points, async = false,
-                colormap = cgrad([:transparent, baikal, chernoe], [0, 0.4, 1]))
+                colormap = cgrad([:transparent, Fathom.light(bermejo), chernoe],
+                                 [0, 0.4, 1]))
+
+    # * Violin plot
+    ax = Makie.Axis(gs[7], title = "Violin plots", xlabel = "Group", ylabel = "Value")
+    N = 200
+    map(1:6) do i
+        y = randn(N) .+ randn()
+        violin!(ax, fill(i, N), y)
+    end
+
+    # * Rainclouds
+    ax = Axis(gs[8], title = "Raincloud plots", xlabel = "Group", ylabel = "Value")
+    N = 50
+    map(1:6) do i
+        y = randn(N) .+ randn()
+        rainclouds!(ax, fill(i, N), y)
+    end
+
+    # * Boxplot
+    ax = Axis(gs[9], title = "Boxplots", xlabel = "Group", ylabel = "Value")
+    N = 200
+    map(1:6) do i
+        y = randn(N) .^ 1 .+ randn() .+ (0.4 .* randn(N)) .^ 3
+        boxplot!(ax, fill(i, N), y)
+    end
+
     f
 end
 
@@ -370,257 +417,6 @@ x = Lscientific(1/123.456, 2) # L"8.10 \\times 10^{-3}"
 Lscientific(args...) = LaTeXString(lscientific(args...))
 
 """
-The Fathom colors: `baikal`, `bermejo`, `qinghai`, `seohae`, `ianthina`.
-"""
-colors = cgrad([baikal, bermejo, qinghai, seohae, ianthina, abyad],
-               categorical = true)
-
-colororder = [(c, 0.7) for c in colors]
-palette = (patchcolor = colororder,
-           color = colororder,
-           strokecolor = colororder)
-
-function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize())
-    Theme(;
-          colormap = sunrise,
-          strokewidth = 10.0,
-          strokecolor = baikal,
-          strokevisible = true,
-          font = :regular,
-          fonts = globalfonts,
-          palette,
-          linewidth = 3.0,
-          patchstrokewidth = 0.0,
-          markersize = 15,
-          fontsize = globalfontsize,
-          linecap = :round,
-          joinstyle = :round,
-          Figure = (;
-                    size = (720, 480)),
-          Axis = (;
-                  backgroundcolor = :white,
-                  topspinecolor = :gray88,
-                  leftspinecolor = :gray88,
-                  bottomspinecolor = :gray88,
-                  rightspinecolor = :gray88,
-                  xgridcolor = :gray88,
-                  ygridcolor = :gray88,
-                  xminorgridcolor = :gray91,
-                  # xminorgridvisible = true,
-                  yminorgridcolor = :gray91,
-                  # yminorgridvisible = true,
-                  leftspinevisible = false,
-                  rightspinevisible = false,
-                  bottomspinevisible = false,
-                  topspinevisible = false,
-                  xminorticksvisible = false,
-                  yminorticksvisible = false,
-                  xticksvisible = false,
-                  yticksvisible = false,
-                  #   xtickformat = terseticks(; sigdigits = 2),
-                  #   ytickformat = terseticks(; sigdigits = 2),
-                  spinewidth = 1,
-                  xticklabelcolor = :black,
-                  yticklabelcolor = :black,
-                  titlecolor = :black,
-                  xticksize = 4,
-                  yticksize = 4,
-                  xtickwidth = 1.5,
-                  ytickwidth = 1.5,
-                  xgridwidth = 1.5,
-                  ygridwidth = 1.5,
-                  xlabelpadding = 3,
-                  ylabelpadding = 3,
-                  palette,
-                  titlefont = :bold, # "times serif bold",
-                  titlesize = globalfontsize * 1.25,
-                  xlabelsize = globalfontsize * 1.25,
-                  ylabelsize = globalfontsize * 1.25),
-          Legend = (;
-                    framevisible = false,
-                    padding = (1, 1, 1, 1),
-                    patchcolor = :transparent,
-                    titlefont = :bold),
-          Axis3 = (;
-                   spinecolor = :gray81,
-                   xgridcolor = :gray81,
-                   ygridcolor = :gray81,
-                   zgridcolor = :gray81,
-                   xspinesvisible = false,
-                   yspinesvisible = false,
-                   zspinesvisible = false,
-                   yzpanelcolor = :white,
-                   xzpanelcolor = :white,
-                   xypanelcolor = :white,
-                   xticksvisible = false,
-                   yticksvisible = false,
-                   zticksvisible = false,
-                   titlefont = :bold,
-                   titlesize = globalfontsize * 1.25,
-                   xlabelsize = globalfontsize * 1.25,
-                   ylabelsize = globalfontsize * 1.25,
-                   zlabelsize = globalfontsize * 1.25,
-                   palette),
-          Colorbar = (;
-                      spinecolor = :gray88,
-                      tickcolor = :white,
-                      tickalign = 1,
-                      ticklabelcolor = :black,
-                      spinewidth = 0,
-                      ticklabelpad = 5),
-          Textbox = (;),
-          Scatter = (;),
-          Lines = (; linecap = :round,
-                   joinstyle = :round),
-          Hist = (;),
-          Violin = (; cycle = Cycle([:patchcolor, :strokecolor, :color], covary = true)),
-          Density = (; strokewidth = 5,
-                     cycle = Cycle([:color, :strokecolor], covary = true)),
-          Label = (; valign = :top, halign = :left, font = :bold,
-                   fontsize = globalfontsize * 1.25))
-end
-
-"""
-    fathom(options...; fonts=fathomfonts())
-
-Return the default Fathom theme. The `options` argument can be used to modify the default values, by passing keyword arguments with the names of the attributes to be changed and their new values.
-
-Some vailable options are:
-- `:dark`: Use a dark background and light text.
-- `:transparent`: Make the background transparent.
-- `:minorgrid`: Show minor gridlines.
-- `:serif`: Use a serif font.
-- `:redblue`: Use a red-blue colormap.
-- `:gray`: Use a grayscale colormap.
-- `:physics`: Set a theme that resembles typical plots in physics journals.
-"""
-function fathom(options...; fonts = fathomfonts())
-    if fonts isa String || fonts isa Symbol
-        fathomfonts(fonts)
-    end
-    if :serif ∈ options
-        thm = _fathom(; globalfonts = fathomfonts("Times"))
-    else
-        thm = _fathom(; globalfonts = fonts)
-    end
-    options = collect(options)
-    options = options[options .!= :serif]
-    _fathom!.((thm,), Val.(options))
-    return thm
-end
-
-四海 = 遠見 = 四看 = fourseas = Fathom
-
-function setall!(thm::Attributes, attribute, value)
-    thm[attribute] = value
-    for a in keys(thm)
-        if thm[a] isa Attributes
-            if value isa Attributes
-                thm[a] = value
-            else
-                if haskey(thm[a], attribute)
-                    thm[a][attribute] = value
-                end
-            end
-        end
-    end
-end
-
-transparent = Makie.RGBA(0, 0, 0, 0)
-function _fathom!(thm::Attributes, ::Val{:transparent})
-    setall!(thm, :backgroundcolor, transparent)
-    setall!(thm, :yzpanelcolor, transparent)
-    setall!(thm, :xzpanelcolor, transparent)
-    setall!(thm, :xypanelcolor, transparent)
-end
-function _fathom!(thm::Attributes, ::Val{:minorgrid})
-    setall!(thm, :xminorgridvisible, true)
-    setall!(thm, :yminorgridvisible, true)
-    setall!(thm, :zminorgridvisible, true)
-end
-function _fathom!(thm::Attributes, ::Val{:dark})
-    gridcolor = :gray38
-    minorgridcolor = :gray51
-    strokecolor = baikal
-    textcolor = :white
-    setall!(thm, :strokecolor, strokecolor)
-    setall!(thm, :backgroundcolor, chernoe)
-    setall!(thm, :textcolor, textcolor)
-    setall!(thm, :xgridcolor, gridcolor)
-    setall!(thm, :ygridcolor, gridcolor)
-    setall!(thm, :zgridcolor, gridcolor)
-    setall!(thm, :xtickcolor, gridcolor)
-    setall!(thm, :ytickcolor, gridcolor)
-    setall!(thm, :ztickcolor, gridcolor)
-    setall!(thm, :xminorgridcolor, minorgridcolor)
-    setall!(thm, :yminorgridcolor, minorgridcolor)
-    setall!(thm, :zminorgridcolor, minorgridcolor)
-    setall!(thm, :xticklabelcolor, textcolor)
-    setall!(thm, :yticklabelcolor, textcolor)
-    setall!(thm, :zticklabelcolor, textcolor)
-    setall!(thm, :titlecolor, textcolor)
-    setall!(thm, :yzpanelcolor, chernoe)
-    setall!(thm, :xzpanelcolor, chernoe)
-    setall!(thm, :xypanelcolor, chernoe)
-    setall!(thm, :tickcolor, textcolor)
-    setall!(thm, :ticklabelcolor, textcolor)
-    setall!(thm, :spinecolor, gridcolor)
-    thm[:Axis][:topspinecolor] = gridcolor
-    thm[:Axis][:leftspinecolor] = gridcolor
-    thm[:Axis][:bottomspinecolor] = gridcolor
-    thm[:Axis][:rightspinecolor] = gridcolor
-    thm[:Colorbar][:spinecolor] = gridcolor
-    thm[:Axis3][:xspinesvisible] = false
-    thm[:Axis3][:yspinesvisible] = false
-    thm[:Axis3][:zspinesvisible] = false
-    thm[:Axis3][:xticksvisible] = false
-    thm[:Axis3][:yticksvisible] = false
-    thm[:Axis3][:zticksvisible] = false
-end
-function _fathom!(thm::Attributes, ::Val{:physics})
-    setall!(thm, :topspinevisible, true)
-    setall!(thm, :rightspinevisible, true)
-    setall!(thm, :bottomspinevisible, true)
-    setall!(thm, :leftspinevisible, true)
-    setall!(thm, :xticksvisible, true)
-    setall!(thm, :yticksvisible, true)
-    setall!(thm, :zticksvisible, true)
-    setall!(thm, :xtickalign, true)
-    setall!(thm, :ytickalign, true)
-    setall!(thm, :ztickalign, true)
-    setall!(thm, :xminortickalign, true)
-    setall!(thm, :yminortickalign, true)
-    setall!(thm, :zminortickalign, true)
-
-    setall!(thm, :xminorticksvisible, true)
-    setall!(thm, :yminorticksvisible, true)
-    setall!(thm, :zminorticksvisible, true)
-    setall!(thm, :xminorticks, IntervalsBetween(5))
-    setall!(thm, :yminorticks, IntervalsBetween(5))
-    setall!(thm, :zminorticks, IntervalsBetween(5))
-
-    setall!(thm, :topspinecolor, :black)
-    setall!(thm, :rightspinecolor, :black)
-    setall!(thm, :bottomspinecolor, :black)
-    setall!(thm, :leftspinecolor, :black)
-
-    setall!(thm, :xgridvisible, false)
-    setall!(thm, :ygridvisible, false)
-    setall!(thm, :zgridvisible, false)
-    setall!(thm, :xminorgridvisible, false)
-    setall!(thm, :yminorgridvisible, false)
-    setall!(thm, :zminorgridvisible, false)
-
-    setall!(thm, :xminorgridstyle, :dash)
-    setall!(thm, :yminorgridstyle, :dash)
-    setall!(thm, :zminorgridstyle, :dash)
-
-    thm[:Axis3][:xgridvisible] = true
-    thm[:Axis3][:ygridvisible] = true
-    thm[:Axis3][:zgridvisible] = true
-end
-
-"""
     axiscolorbar(ax, args...; kwargs...)
 
 Create a colorbar for the given `ax` axis. The `args` argument is passed to the `Colorbar` constructor, and the `kwargs` argument is passed to the `Colorbar` constructor as keyword arguments. The `position` argument specifies the position of the colorbar relative to the axis, and can be one of `:rt` (right-top), `:rb` (right-bottom), `:lt` (left-top), `:lb` (left-bottom). The default value is `:rt`.
@@ -672,6 +468,7 @@ end
 terseticks(x; kwargs...) = terseticks.(x; kwargs...)
 terseticks(; kwargs...) = x -> terseticks(x; kwargs...)
 
+include("Theme.jl")
 include("Polar.jl")
 include("Prism.jl")
 include("CovEllipse.jl")
