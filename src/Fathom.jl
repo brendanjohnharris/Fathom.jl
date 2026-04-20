@@ -164,14 +164,27 @@ Produce a figure showcasing the current theme.
 """
 function demofigure()
     Random.seed!(32)
-    f = NinePanel()
-    gs = subdivide(f, 3, 3)
+    f = TwelvePanel()
+    gs = subdivide(f, 4, 3)
+
+    ncolors = length(Fathom.colororder)
 
     # * Lines
     ax = Axis(gs[1][1, 1], title = "Measurements", xlabel = "Time (s)",
               ylabel = "Amplitude")
-    labels = [L"\alpha", L"\beta", L"\gamma", L"\delta", L"\epsilon", L"\zeta"]
-    for i in 1:6
+    labels = [
+        L"\alpha",
+        L"\beta",
+        L"\gamma",
+        L"\delta",
+        L"\epsilon",
+        L"\zeta",
+        L"\eta",
+        L"\theta",
+        L"\iota",
+        L"\kappa"
+    ]
+    for i in 1:ncolors
         y = cumsum(randn(10)) .* (isodd(i) ? 1 : -1)
         lines!(y, label = labels[i])
         # scatter!(y, label = labels[i])
@@ -194,7 +207,7 @@ function demofigure()
     # * Density
     ax = Axis(gs[4], title = "Density plots", xlabel = "Height (m)",
               ylabel = "Density")
-    for i in 1:6
+    for i in 1:ncolors
         y = randn(200) .+ 2i
         density!(y)
     end
@@ -202,9 +215,10 @@ function demofigure()
     Makie.xlims!(ax, -1, 15)
 
     # * Bars
-    Axis(gs[5], title = "Stock performance", xticks = (1:6, labels), xlabel = "Company",
+    Axis(gs[5], title = "Stock performance", xticks = (1:ncolors, labels[1:ncolors]),
+         xlabel = "Company",
          ylabel = "Gain (\$)")
-    for i in 1:6
+    for i in 1:ncolors
         data = randn(1)
         barplot!([i], data)
         rangebars!([i], data .- 0.2, data .+ 0.2)
@@ -231,7 +245,7 @@ function demofigure()
     # * Violin plot
     ax = Makie.Axis(gs[7], title = "Violin plots", xlabel = "Group", ylabel = "Value")
     N = 200
-    map(1:6) do i
+    map(1:ncolors) do i
         y = randn(N) .+ randn()
         violin!(ax, fill(i, N), y)
     end
@@ -239,7 +253,7 @@ function demofigure()
     # * Rainclouds
     ax = Axis(gs[8], title = "Raincloud plots", xlabel = "Group", ylabel = "Value")
     N = 50
-    map(1:6) do i
+    map(1:ncolors) do i
         y = randn(N) .+ randn()
         rainclouds!(ax, fill(i, N), y)
     end
@@ -247,10 +261,15 @@ function demofigure()
     # * Boxplot
     ax = Axis(gs[9], title = "Boxplots", xlabel = "Group", ylabel = "Value")
     N = 200
-    map(1:6) do i
+    map(1:ncolors) do i
         y = randn(N) .^ 1 .+ randn() .+ (0.4 .* randn(N)) .^ 3
         boxplot!(ax, fill(i, N), y)
     end
+
+    # * Polar histogram
+    ax = PolarAxis(gs[10], title = "Polar histogram")
+    x = randn(1000) .+ randn()
+    polarhist!(ax, x, bins = 20, normalization = :pdf)
 
     f
 end

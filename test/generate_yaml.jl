@@ -1,14 +1,6 @@
 using Fathom, Test, YAML, CairoMakie
 
-function tohex(c)
-    rgb = convert(CairoMakie.Makie.RGB, c)
-    r = round(Int, clamp(rgb.r, 0, 1) * 255)
-    g = round(Int, clamp(rgb.g, 0, 1) * 255)
-    b = round(Int, clamp(rgb.b, 0, 1) * 255)
-    return uppercase(string("#", string(r, base = 16, pad = 2),
-                            string(g, base = 16, pad = 2),
-                            string(b, base = 16, pad = 2)))
-end
+tohex(c) = hex(c, :RRGGBB)
 
 data = Dict{String, Dict{String, String}}()
 for (name, base) in pairs(Fathom.BASE_COLORS)

@@ -1,7 +1,7 @@
 """
 The Fathom colors: `baikal`, `bermejo`, `qinghai`, `seohae`, `ianthina`.
 """
-const colors = cgrad([baikal, bermejo, qinghai, seohae, ianthina, abyad],
+const colors = cgrad([baikal, bermejo, qinghai, seohae, ianthina, mesopelagic, abyad],
                      categorical = true)
 
 const colororder = [c for c in colors]
@@ -18,6 +18,7 @@ patchcycle = Cycle([:color => :patchcolor,
 
 decoration_color = dark(abyad)
 textcolor = :black
+tickalign = 0.5 # Crosses the axis
 
 function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize())
     Theme(;
@@ -53,6 +54,14 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
                   yticksvisible = true,
                   xminorticksvisible = false,
                   yminorticksvisible = false,
+                  xtickcolor = decoration_color,
+                  ytickcolor = decoration_color,
+                  xminortickcolor = decoration_color,
+                  yminortickcolor = decoration_color,
+                  xtickalign = tickalign,
+                  ytickalign = tickalign,
+                  xminortickalign = tickalign,
+                  yminortickalign = tickalign,
                   spinewidth = 1,
                   xticklabelcolor = textcolor,
                   yticklabelcolor = textcolor,
@@ -74,7 +83,6 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
                     patchcolor = :transparent,
                     titlefont = :bold),
           Axis3 = (;
-                   spinecolor = decoration_color,
                    xspinesvisible = true,
                    yspinesvisible = true,
                    zspinesvisible = true,
@@ -87,16 +95,47 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
                    xticksvisible = true,
                    yticksvisible = true,
                    zticksvisible = true,
+                   xspinecolor_1 = decoration_color,
+                   xspinecolor_2 = decoration_color,
+                   xspinecolor_3 = decoration_color,
+                   xspinecolor_4 = decoration_color,
+                   yspinecolor_1 = decoration_color,
+                   yspinecolor_2 = decoration_color,
+                   yspinecolor_3 = decoration_color,
+                   yspinecolor_4 = decoration_color,
+                   zspinecolor_1 = decoration_color,
+                   zspinecolor_2 = decoration_color,
+                   zspinecolor_3 = decoration_color,
+                   zspinecolor_4 = decoration_color,
+                   xtickcolor = decoration_color,
+                   ytickcolor = decoration_color,
+                   ztickcolor = decoration_color,
+                   xtickalign = tickalign,
+                   ytickalign = tickalign,
+                   ztickalign = tickalign,
                    titlefont = :bold,
                    titlesize = globalfontsize * 1.25,
                    xlabelsize = globalfontsize * 1.25,
                    ylabelsize = globalfontsize * 1.25,
                    zlabelsize = globalfontsize * 1.25,
                    palette),
+          PolarAxis = (;
+                       spinecolor = decoration_color,
+                       rtickcolor = decoration_color,
+                       thetatickcolor = decoration_color,
+                       rminortickcolor = decoration_color,
+                       thetaminortickcolor = decoration_color,
+                       rtickalign = tickalign,
+                       thetatickalign = tickalign,
+                       rminortickalign = tickalign,
+                       thetaminortickalign = tickalign,
+                       rticksvisible = true,
+                       thetaticksvisible = true,
+                       palette),
           Colorbar = (;
                       spinecolor = decoration_color,
                       tickcolor = :white,
-                      tickalign = 1,
+                      tickalign = tickalign,
                       ticklabelcolor = textcolor,
                       spinewidth = 0,
                       ticklabelpad = 5),
@@ -105,10 +144,11 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
           Lines = (; linecap = :round,
                    joinstyle = :round),
           Hist = (; cycle = patchcycle),
-          RainClouds = (; clouds = hist, hist_bins = 10, jitter_width = 0.4,
-                        boxplot_width = 0.3,
-                        cloud_width = 0.4,
-                        markersize = 5),
+          RainClouds = (; clouds = hist, hist_bins = 10, jitter_width = 0.3,
+                        boxplot_width = 0.15,
+                        cloud_width = 0.3,
+                        markersize = 5,
+                        cycle = patchcycle),
           Density = (; cycle = patchcycle),
           Ziggurat = (; cycle = patchcycle),
           Violin = (; cycle = patchcycle, mediancolor = darker(abyad), show_median = true),
