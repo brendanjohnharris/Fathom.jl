@@ -22,6 +22,12 @@ bermejo:
   light: "#FF787E"
   lighter: "#FFA9A9"
   dark: "#D60034"
+playa:
+  base: "#F5F1E8"
+  darker: "#B4B0A7"
+  light: "#FFFFF8"
+  lighter: "#FFFFF9"
+  dark: "#D4D0C7"
 ianthina:
   base: "#B97AD7"
   darker: "#7C3C99"

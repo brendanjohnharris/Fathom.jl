@@ -11,20 +11,22 @@ const DARKER_SHIFT = 0.2
 const LIGHTER_DESATURATE = 0.4
 const DARKER_SATURATE = 0.05
 
-function set_oklab(c::Colorant;
-                   l::Union{Nothing, Real} = nothing,
-                   a::Union{Nothing, Real} = nothing,
-                   b::Union{Nothing, Real} = nothing,
-                   outtype::Type = RGB)
+function set_oklab(
+        c::Colorant;
+        l::Union{Nothing, Real} = nothing,
+        a::Union{Nothing, Real} = nothing,
+        b::Union{Nothing, Real} = nothing,
+        outtype::Type = RGB
+    )
     oc = convert(Oklab{Float64}, c)
     ll = isnothing(l) ? oc.l : clamp(Float64(l), 0.0, 100.0) / 100.0
     aa = isnothing(a) ? oc.a : Float64(a)
     bb = isnothing(b) ? oc.b : Float64(b)
-    convert(outtype, Oklab{Float64}(ll, aa, bb))
+    return convert(outtype, Oklab{Float64}(ll, aa, bb))
 end
 
 function set_oklab(colors::AbstractVector{<:Colorant}; kwargs...)
-    map(c -> set_oklab(c; kwargs...), colors)
+    return map(c -> set_oklab(c; kwargs...), colors)
 end
 
 """
@@ -98,9 +100,14 @@ const LIGHT_PELAGIC = map(light, PELAGIC_COLORS)
 
 export epipelagic, mesopelagic, bathypelagic, abyssopelagic
 
-const BASE_COLORS = (; baikal, bermejo,
-                     qinghai, seohae,
-                     ianthina, abyad, mesopelagic, chernoe)
+const playa = colorant"#f5f1e8" # Playa; beach
+export playa
+
+const BASE_COLORS = (;
+    baikal, bermejo,
+    qinghai, seohae,
+    ianthina, abyad, mesopelagic, chernoe,
+)
 
 const LIGHT_COLORS = map(light, BASE_COLORS)
 const DARK_COLORS = map(dark, BASE_COLORS)

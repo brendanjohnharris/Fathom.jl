@@ -1,8 +1,8 @@
 using Makie
 import Makie: @Block, inherit, Text, Observables, GeometryBasics, alpha, red, green, blue,
-              GridLayoutBase, automatic, bar_label_formatter, _hist_center_weights, Polygon,
-              KernelDensity, Distributions, Statistics.mean, Statistics.quantile,
-              KernelDensity.kde
+    GridLayoutBase, automatic, bar_label_formatter, _hist_center_weights, Polygon,
+    KernelDensity, Distributions, Statistics.mean, Statistics.quantile,
+    KernelDensity.kde
 import Makie.StatsBase
 
 function pick_polarhist_edges(vals, bins)
@@ -37,6 +37,9 @@ end
 Plots a polar histogram of the values in `x`. Attributes are shared with `Makie.Hist` and `Makie.Poly`.
 """
 @recipe PolarHist (x,) begin
+    color = @inherit patchcolor
+    strokecolor = automatic
+    fillalpha = 0.5
     bins = 15
     normalization = :none
     scale_to = nothing
@@ -45,16 +48,28 @@ Plots a polar histogram of the values in `x`. Attributes are shared with `Makie.
     get_drop_attrs(Poly, [])...
 end
 function Makie.plot!(plot::PolarHist{<:Tuple{AbstractVector{<:Real}}})
-    map!(plot.attributes, [:x, :bins, :normalization, :scale_to, :weights],
-         [:edges, :widths, :points]) do x, bins, normalization, scale_to, weights
+    map!(
+        plot.attributes, [:x, :bins, :normalization, :scale_to, :weights],
+        [:edges, :widths, :points]
+    ) do x, bins, normalization, scale_to, weights
         values = mod.(x .+ π, 2 * π) .- π
         edges = pick_polarhist_edges(values, bins)
-        centers, weights = hist_center_weights(values, edges, normalization, scale_to,
-                                               weights)
+        centers, weights = hist_center_weights(
+            values, edges, normalization, scale_to,
+            weights
+        )
         return edges, diff(edges), Point2f.(centers, weights)
     end
-    map!(plot.attributes, [:color, :points], :real_color) do color, points
-        Makie.to_color(color === :values ? last.(points) : color)
+    map!(plot.attributes, [:color, :points, :fillalpha], :real_fillcolor) do color, points, a
+        base_color = Makie.to_color(color === :values ? last.(points) : color)
+        Makie.to_color(isnothing(a) ? base_color : (base_color, a))
+    end
+    map!(plot.attributes, [:strokecolor, :color, :points], :real_strokecolor) do strokecolor, color, points
+        if strokecolor === automatic
+            Makie.to_color(color === :values ? last.(points) : color)
+        else
+            Makie.to_color(strokecolor === :values ? last.(points) : strokecolor)
+        end
     end
     map!(plot.attributes, [:bar_labels], :real_bar_labels) do bar_labels
         bar_labels === :values ? :y : bar_labels
@@ -66,8 +81,12 @@ function Makie.plot!(plot::PolarHist{<:Tuple{AbstractVector{<:Real}}})
         return polygons
     end
 
-    poly!(plot, plot.attributes, plot.polygons)
-    plot
+    poly!(
+        plot, plot.attributes, plot.polygons;
+        color = plot.real_fillcolor,
+        strokecolor = plot.real_strokecolor
+    )
+    return plot
 end
 Makie.preferred_axis_type(plot::PolarHist) = Makie.PolarAxis
 
@@ -165,15 +184,19 @@ function Makie.plot!(plot::PolarDensity{<:Tuple{AbstractVector{<:Real}}})
         return xs, zs, ps, points
     end
 
-    map!(plot.attributes, [:strokecolor, :xs, :ps],
-         [:real_strokecolor]) do strokecolormode, xs, ps
+    map!(
+        plot.attributes, [:strokecolor, :xs, :ps],
+        [:real_strokecolor]
+    ) do strokecolormode, xs, ps
         real_strokecolor = _color(strokecolormode, xs, ps)
         return (real_strokecolor,)
     end
 
-    map!(plot.attributes,
-         [:color, :xs, :ps],
-         [:real_color]) do colormode, xs, ps
+    map!(
+        plot.attributes,
+        [:color, :xs, :ps],
+        [:real_color]
+    ) do colormode, xs, ps
         real_color = _color(colormode, xs, ps)
         # if colormap isa Makie.PlotUtils.ColorGradient
         #     colormap = colormap[0:0.01:1]
@@ -188,18 +211,22 @@ function Makie.plot!(plot::PolarDensity{<:Tuple{AbstractVector{<:Real}}})
         # return (real_color,)
         return (real_color,)
     end
-    band!(plot, plot.attributes, plot.xs, plot.zs, plot.ps; color = plot.real_color,
-          strokecolor = nothing)
+    band!(
+        plot, plot.attributes, plot.xs, plot.zs, plot.ps; color = plot.real_color,
+        strokecolor = nothing
+    )
 
-    lines!(plot, plot.attributes, plot.points;
-           linewidth = plot.strokewidth,
-           color = plot.real_strokecolor,
-           colormap = plot.strokecolormap,
-           colorrange = plot.strokecolorrange,
-           colorscale = plot.strokecolorscale,
-           lowclip = plot.strokelowclip,
-           highclip = plot.strokehighclip,
-           nan_color = plot.strokenan_color)
-    plot
+    lines!(
+        plot, plot.attributes, plot.points;
+        linewidth = plot.strokewidth,
+        color = plot.real_strokecolor,
+        colormap = plot.strokecolormap,
+        colorrange = plot.strokecolorrange,
+        colorscale = plot.strokecolorscale,
+        lowclip = plot.strokelowclip,
+        highclip = plot.strokehighclip,
+        nan_color = plot.strokenan_color
+    )
+    return plot
 end
 Makie.preferred_axis_type(plot::PolarDensity) = Makie.PolarAxis

@@ -5,12 +5,12 @@
      width="180mm" height="25mm" viewBox="0 0 100 1" stroke="none"
      preserveAspectRatio="none" shape-rendering="crispEdges">
 <defs>
-    <pattern id="pat_1e0pVt" width=".2" height=".2"
+    <pattern id="pat_2jw0ie" width=".2" height=".2"
              patternUnits="userSpaceOnUse" patternTransform="scale(13.889,1)" >
         <path d="M.1,0h.1v.1h-.2v.1h.1z" fill="#999" opacity=".5" />
     </pattern>
 </defs>
-<rect width="100" height="1" fill="url(#pat_1e0pVt)" />
+<rect width="100" height="1" fill="url(#pat_2jw0ie)" />
 <path d="M1,.46V1h-1V.54z" fill="#F93D53" />
 <path d="M0,0h1v1h-1z" fill="#F93D53" fill-opacity="1" />
 <path d="M2,.46V1h-1V.54z" fill="#F53D52" />

@@ -122,7 +122,7 @@ function addlabels!(gridpositions, f::Figure = first(gridpositions).layout.paren
     end
 
     for (i, l) in enumerate(gridpositions)
-        Label(l[1, 1, TopLeft()], halign = :left, valign = :bottom,
+        Label(l[1, 1, TopLeft()]; halign = :left, valign = :bottom,
               text = text[i],
               fontsize = 22, padding = (-5, 0, 5, 0), kwargs...)
     end

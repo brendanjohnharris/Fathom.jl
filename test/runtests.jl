@@ -102,7 +102,7 @@ end
     @test_nowarn display(f)
 
     f = Fathom.demofigure()
-    @test_nowarn addlabels!(f, string.(1:9))
+    @test_nowarn addlabels!(f, string.(1:12))
     @test_nowarn display(f)
 
     f = Fathom.demofigure()
