@@ -3,11 +3,11 @@ using Makie.DocStringExtensions
 import Makie: DocThemer, ATTRIBUTES, DocInstances, INSTANCES
 
 import Makie: mixin_generic_plot_attributes, mixin_colormap_attributes,
-              documented_attributes, attribute_names, DocumentedAttributes, automatic
+    documented_attributes, attribute_names, DocumentedAttributes, automatic
 
 function get_attrs(P::Type{<:Plot})
     # Makie.attribute_default_expressions(P)
-    Makie.documented_attributes(P)
+    return Makie.documented_attributes(P)
 end
 function drop_attrs(attrs::DocumentedAttributes, keys)
     attrs = deepcopy(attrs)
@@ -73,9 +73,11 @@ function Makie.plot!(plot::Ziggurat{<:Tuple{AbstractVector{<:Real}}})
     end
 
     hist!(plot, plot.attributes, plot.x; color = plot.fillcoloralpha, strokewidth = 0)
-    stephist!(plot, plot.attributes, plot.x; color = plot.strokecolor,
-              linestyle = plot.linestyle, linewidth = plot.strokewidth,
-              visible = map(!, plot.strokearound))
+    stephist!(
+        plot, plot.attributes, plot.x; color = plot.strokecolor,
+        linestyle = plot.linestyle, linewidth = plot.strokewidth,
+        visible = map(!, plot.strokearound)
+    )
 
     # Build a closed step path when strokearound is true
     map!(plot.attributes, [:x, :strokearound, :bins], :linepoints) do x, strokearound, bins
@@ -95,11 +97,13 @@ function Makie.plot!(plot::Ziggurat{<:Tuple{AbstractVector{<:Real}}})
         push!(ps, Point2f(first(edges), 0))
         return ps
     end
-    lines!(plot, plot.linepoints; color = plot.strokecolor,
-           linestyle = plot.linestyle, linewidth = plot.strokewidth,
-           visible = plot.strokearound)
+    lines!(
+        plot, plot.linepoints; color = plot.strokecolor,
+        linestyle = plot.linestyle, linewidth = plot.strokewidth,
+        visible = plot.strokearound
+    )
 
-    plot
+    return plot
 end
 
 """
@@ -113,17 +117,33 @@ Plots a band of a certain width about a center line.
 `direction` = `:x`: The direction of the band, either `:x` or `:y`.
 """
 @recipe Bandwidth (x, y) begin
-    cycle = :color
+    "Sets the color of the bandwidth fill."
+    color = @inherit patchcolor
+
+    "Sets the color of the bandwidth outline."
+    strokecolor = @inherit patchstrokecolor
+
+    "Transparency of the bandwidth fill"
+    fillalpha = 0.5
 
     "Vertical width of the band in data space"
     bandwidth = 1
     "The direction of the band"
     direction = :x
 
-    get_drop_attrs(Band, [:cycle, :direction])...
+    get_drop_attrs(Band, [:color, :strokecolor, :direction])...
 end
-function Makie.plot!(plot::Bandwidth{<:Tuple{AbstractVector{<:Real},
-                                             AbstractVector{<:Real}}})
+function Makie.plot!(
+        plot::Bandwidth{
+            <:Tuple{
+                AbstractVector{<:Real},
+                AbstractVector{<:Real},
+            },
+        }
+    )
+    map!(plot.attributes, [:color, :fillalpha], :fillcoloralpha) do c, a
+        Makie.to_color(isnothing(a) ? c : (c, a))
+    end
     map!(plot.attributes, [:x, :y, :bandwidth, :direction], [:xx, :yl, :yu]) do x, y, l, d
         if d === :y
             x, y = y, x
@@ -137,6 +157,9 @@ function Makie.plot!(plot::Bandwidth{<:Tuple{AbstractVector{<:Real},
         end
         return x, yl, yu
     end
-    band!(plot, plot.attributes, plot.attributes[:xx], plot.attributes[:yl],
-          plot.attributes[:yu])
+    return band!(
+        plot, plot.attributes, plot.attributes[:xx], plot.attributes[:yl],
+        plot.attributes[:yu]; color = plot.fillcoloralpha,
+        strokecolor = plot.strokecolor
+    )
 end

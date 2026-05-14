@@ -29,7 +29,7 @@ tickalign = 0.5 # Crosses the axis
 
 function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize())
     return Theme(;
-        colormap = sunrise,
+        colormap = pelagic,
         strokewidth = 5,
         strokecolor = baikal,
         strokevisible = true,
@@ -141,6 +141,9 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
             thetaminortickalign = tickalign,
             rticksvisible = true,
             thetaticksvisible = true,
+            backgroundcolor = :transparent,
+            clip = false,
+            clipcolor = :transparent,
             palette,
         ),
         Colorbar = (;
@@ -157,6 +160,7 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
             linecap = :round,
             joinstyle = :round,
         ),
+        Surface = (; specular = 0.25),
         Hist = (; cycle = patchcycle),
         RainClouds = (;
             clouds = hist, hist_bins = 10, jitter_width = 0.3,
@@ -168,6 +172,8 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
         Density = (; cycle = patchcycle),
         Ziggurat = (; cycle = patchcycle),
         PolarHist = (; cycle = patchcycle),
+        PolarDensity = (; cycle = patchcycle),
+        Bandwidth = (; cycle = patchcycle),
         Violin = (; cycle = patchcycle, mediancolor = darker(abyad), show_median = true),
         BoxPlot = (;
             whiskercolor = darker(abyad), cycle = patchcycle,
@@ -202,10 +208,10 @@ Some available options are:
 """
 function fathom(options...; fonts = fathomfonts())
     if fonts isa String || fonts isa Symbol
-        fathomfonts(fonts)
+        fonts = fathomfonts(Symbol(fonts))
     end
     if :serif ∈ options
-        thm = _fathom(; globalfonts = fathomfonts("Times"))
+        thm = _fathom(; globalfonts = fathomfonts(:serif))
     else
         thm = _fathom(; globalfonts = fonts)
     end
@@ -236,12 +242,16 @@ function _fathom!(thm::Attributes, ::Val{:transparent})
     setall!(thm, :backgroundcolor, transparent)
     setall!(thm, :yzpanelcolor, transparent)
     setall!(thm, :xzpanelcolor, transparent)
-    return setall!(thm, :xypanelcolor, transparent)
+    thm[:PolarAxis][:clip] = false
+    thm[:PolarAxis][:clipcolor] = :transparent
+    setall!(thm, :xypanelcolor, transparent)
+    return
 end
 function _fathom!(thm::Attributes, ::Val{:minorgrid})
     setall!(thm, :xminorgridvisible, true)
     setall!(thm, :yminorgridvisible, true)
-    return setall!(thm, :zminorgridvisible, true)
+    setall!(thm, :zminorgridvisible, true)
+    return
 end
 function _fathom!(thm::Attributes, ::Val{:dark})
     gridcolor = :gray38

@@ -45,7 +45,7 @@ Plots a polar histogram of the values in `x`. Attributes are shared with `Makie.
     scale_to = nothing
     weights = automatic
     bar_labels = nothing
-    get_drop_attrs(Poly, [])...
+    get_drop_attrs(Poly, [:color, :strokecolor])...
 end
 function Makie.plot!(plot::PolarHist{<:Tuple{AbstractVector{<:Real}}})
     map!(
@@ -130,10 +130,11 @@ following color modes:
 """
 @recipe PolarDensity (x,) begin
     bandwidth = default_bandwidth_circular
-    color = @inherit color
-    strokecolor = :density
+    color = @inherit patchcolor
+    strokecolor = automatic
+    fillalpha = 0.5
 
-    strokewidth = @inherit linewidth
+    strokewidth = @inherit patchstrokewidth
     strokecolormap = cyclic
     strokecolorrange = automatic
     strokecolorscale = identity
@@ -184,32 +185,22 @@ function Makie.plot!(plot::PolarDensity{<:Tuple{AbstractVector{<:Real}}})
         return xs, zs, ps, points
     end
 
-    map!(
-        plot.attributes, [:strokecolor, :xs, :ps],
-        [:real_strokecolor]
-    ) do strokecolormode, xs, ps
-        real_strokecolor = _color(strokecolormode, xs, ps)
-        return (real_strokecolor,)
+    map!(plot.attributes, [:color, :xs, :ps, :fillalpha], [:real_color, :real_strokebase]) do colormode, xs, ps, a
+        strokebase = _color(colormode, xs, ps)
+        fillcolor = if strokebase isa AbstractVector{<:Number} || isnothing(a)
+            strokebase
+        else
+            Makie.to_color((strokebase, a))
+        end
+        return fillcolor, strokebase
     end
 
-    map!(
-        plot.attributes,
-        [:color, :xs, :ps],
-        [:real_color]
-    ) do colormode, xs, ps
-        real_color = _color(colormode, xs, ps)
-        # if colormap isa Makie.PlotUtils.ColorGradient
-        #     colormap = colormap[0:0.01:1]
-        # end
-        # colormap = convert(Vector{RGBAf}, collect(colormap))
-        # if real_color isa AbstractVector{<:Number}
-        #     real_color = Makie.numbers_to_colors(real_color, colormap, colorscale,
-        #                                          Vec2(colorrange), lowclip,
-        #                                          highclip, Makie.to_color(nan_color),
-        #                                          interpolate)
-        # end
-        # return (real_color,)
-        return (real_color,)
+    map!(plot.attributes, [:strokecolor, :real_strokebase, :xs, :ps], :real_strokecolor) do strokecolormode, strokebase, xs, ps
+        strokecolormode === automatic ? strokebase : _color(strokecolormode, xs, ps)
+    end
+
+    map!(plot.attributes, [:real_strokecolor], :strokecolor_is_mapped) do c
+        c isa AbstractVector{<:Number}
     end
     band!(
         plot, plot.attributes, plot.xs, plot.zs, plot.ps; color = plot.real_color,
@@ -225,7 +216,15 @@ function Makie.plot!(plot::PolarDensity{<:Tuple{AbstractVector{<:Real}}})
         colorscale = plot.strokecolorscale,
         lowclip = plot.strokelowclip,
         highclip = plot.strokehighclip,
-        nan_color = plot.strokenan_color
+        nan_color = plot.strokenan_color,
+        visible = plot.strokecolor_is_mapped
+    )
+
+    lines!(
+        plot, plot.attributes, plot.points;
+        linewidth = plot.strokewidth,
+        color = plot.real_strokecolor,
+        visible = map(!, plot.strokecolor_is_mapped)
     )
     return plot
 end

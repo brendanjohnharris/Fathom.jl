@@ -29,10 +29,14 @@ for (i, (name, cmap)) in enumerate(gradient_items)
 
     vals = repeat(reshape(collect(1:nsteps), 1, nsteps), strip_rows, 1)
     vals_t = transpose(vals)
-    heatmap!(ax, 1:nsteps, strip_rows .+ (1:strip_rows), vals_t,
-             colormap = grad_colors, colorrange = (1, nsteps))
-    heatmap!(ax, 1:nsteps, 1:strip_rows, vals_t,
-             colormap = luminance_only, colorrange = (1, nsteps))
+    heatmap!(
+        ax, 1:nsteps, strip_rows .+ (1:strip_rows), vals_t,
+        colormap = grad_colors, colorrange = (1, nsteps)
+    )
+    heatmap!(
+        ax, 1:nsteps, 1:strip_rows, vals_t,
+        colormap = luminance_only, colorrange = (1, nsteps)
+    )
 
     hidedecorations!(ax)
     hidespines!(ax)

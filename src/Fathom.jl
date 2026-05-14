@@ -11,12 +11,12 @@ using Makie.LaTeXStrings
 import Makie.IntervalSets: Interval
 
 export fathom, importall, freeze!, clip, axiscolorbar,
-       reverselegend!,
-       scientific, lscientific, Lscientific,
-       percentageticks, terseticks
+    reverselegend!,
+    scientific, lscientific, Lscientific,
+    percentageticks, terseticks
 
 function __init__()
-    ENV["UNITFUL_FANCY_EXPONENTS"] = true
+    return ENV["UNITFUL_FANCY_EXPONENTS"] = true
 end
 
 """
@@ -96,27 +96,8 @@ export lighten, darken, brighten, set_luminance
 include("Colors.jl")
 include("Colormaps.jl")
 include("Recipes.jl")
+include("Fonts.jl")
 
-# * Bundled Source Sans 3 font
-const FONT_DIR = joinpath(@__DIR__, "..", "fonts")
-const fathomfont = joinpath(FONT_DIR, "SourceSans3-Regular.ttf")
-
-function fathomfonts(font = fathomfont)
-    if isfile(font)
-        dir = dirname(font)
-        Attributes(:regular => font,
-                   :bold => joinpath(dir, "SourceSans3-Bold.ttf"),
-                   :italic => joinpath(dir, "SourceSans3-It.ttf"),
-                   :bold_italic => joinpath(dir, "SourceSans3-BoldIt.ttf"))
-    else
-        Attributes(:regular => font,
-                   :bold => font * " Bold",
-                   :italic => font * " Italic",
-                   :bold_italic => font * " Bold Italic")
-    end
-end
-
-fathomfontsize() = 14
 
 """
 Slightly widen an interval by a fraction δ
@@ -139,15 +120,15 @@ Set the default theme to `thm` and save it as a preference. The change will take
 ```
 """
 macro default_theme!(thm)
-    try
-        @set_preferences!("default_theme"=>string(thm))
+    return try
+        @set_preferences!("default_theme" => string(thm))
         @info("Default theme set to $thm. Restart Julia for the change to take effect")
     catch e
         @error "Could not set theme. Reverting to Fathom.jl default"
     end
 end
 export @default_theme!
-_default_theme = @load_preference("default_theme", default="fathom()")
+_default_theme = @load_preference("default_theme", default = "fathom()")
 function default_theme()
     try
         eval(Meta.parse(_default_theme))
@@ -170,8 +151,10 @@ function demofigure()
     ncolors = length(Fathom.colororder)
 
     # * Lines
-    ax = Axis(gs[1][1, 1], title = "Measurements", xlabel = "Time (s)",
-              ylabel = "Amplitude")
+    ax = Axis(
+        gs[1][1, 1], title = "Measurements", xlabel = "Time (s)",
+        ylabel = "Amplitude"
+    )
     labels = [
         L"\alpha",
         L"\beta",
@@ -182,7 +165,7 @@ function demofigure()
         L"\eta",
         L"\theta",
         L"\iota",
-        L"\kappa"
+        L"\kappa",
     ]
     for i in 1:ncolors
         y = cumsum(randn(10)) .* (isodd(i) ? 1 : -1)
@@ -193,8 +176,11 @@ function demofigure()
 
     # * Surface
     Axis3(gs[2][1, 1], viewmode = :stretch, zlabeloffset = 40, title = "Variable: σ ⤆ τ")
-    s = Makie.surface!(0:0.5:10, 0:0.5:10, (x, y) -> sqrt(x * y) + sin(1.5x))
-    Colorbar(gs[2][1, 2], s, label = "Intensity")
+    s = Makie.surface!(
+        0:0.05:10, 0:0.05:10, (x, y) -> sqrt(x * y) + sin(1.5x), alpha = 0.9,
+        specular = 0.25,
+    )
+    Colorbar(gs[2][1, 2], s)
 
     # * Ziggurat
     ax = Makie.Axis(gs[3], title = "Ziggurat plots")
@@ -205,8 +191,10 @@ function demofigure()
     end
 
     # * Density
-    ax = Axis(gs[4], title = "Density plots", xlabel = "Height (m)",
-              ylabel = "Density")
+    ax = Axis(
+        gs[4], title = "Density plots", xlabel = "Height (m)",
+        ylabel = "Density"
+    )
     for i in 1:ncolors
         y = randn(200) .+ 2i
         density!(y)
@@ -215,9 +203,11 @@ function demofigure()
     Makie.xlims!(ax, -1, 15)
 
     # * Bars
-    Axis(gs[5], title = "Stock performance", xticks = (1:ncolors, labels[1:ncolors]),
-         xlabel = "Company",
-         ylabel = "Gain (\$)")
+    Axis(
+        gs[5], title = "Stock performance", xticks = (1:ncolors, labels[1:ncolors]),
+        xlabel = "Company",
+        ylabel = "Gain (\$)"
+    )
     for i in 1:ncolors
         data = randn(1)
         barplot!([i], data)
@@ -234,13 +224,19 @@ function demofigure()
         end
         return xy
     end
-    Clifford((x, y), a, b, c, d) = Point2f(sin(a * y) + c * cos(a * x),
-                                           sin(b * x) + d * cos(b * y))
+    Clifford((x, y), a, b, c, d) = Point2f(
+        sin(a * y) + c * cos(a * x),
+        sin(b * x) + d * cos(b * y)
+    )
     arg = [0, 0, -1.7, 1.5, -0.5, 0.7]
-    points = trajectory(Clifford, arg...; n = Int(5e5))
-    datashader!(ax, points, async = false,
-                colormap = cgrad([:transparent, Fathom.light(bermejo), chernoe],
-                                 [0, 0.4, 1]))
+    points = trajectory(Clifford, arg...; n = Int(5.0e5))
+    datashader!(
+        ax, points, async = false,
+        colormap = cgrad(
+            [:transparent, Fathom.light(bermejo), chernoe],
+            [0, 0.4, 1]
+        )
+    )
 
     # * Violin plot
     ax = Makie.Axis(gs[7], title = "Violin plots", xlabel = "Group", ylabel = "Value")
@@ -271,7 +267,18 @@ function demofigure()
     x = randn(1000) .+ randn()
     polarhist!(ax, x, bins = 20, normalization = :pdf)
 
-    f
+    # * Polar density
+    ax = PolarAxis(gs[11], title = "Polar density")
+    x = randn(1000) .+ randn()
+    polardensity!(ax, x)
+
+    # * Bandwidth
+    ax = Axis(gs[12], title = "Bandwidth", xlabel = "Time (s)", ylabel = "Signal")
+    x = range(0, 10, length = 200)
+    y = @. sin(1.3 * x) + 0.15 * cos(4.7 * x)
+    bandwidth!(ax, x, y; bandwidth = 0.5)
+
+    return f
 end
 
 freeze!(anything) = ()
@@ -291,7 +298,7 @@ function freeze!(ax::Union{Axis, Axis3})
     limits = zip(limits.origin, limits.origin .+ limits.widths)
     limits = collect(limits) |> Tuple
     ax.limits = limits
-    limits
+    return limits
 end
 freeze!(f::Figure) = freeze!.(f.content)
 freeze!() = freeze!(current_figure())
@@ -321,7 +328,7 @@ function clip(fig = Makie.current_figure(), fmt = :png; kwargs...)
 end
 
 function beep()
-    try
+    return try
         sound(f) = [`play -q -n synth 0.1 sin $f`]
         @async [run.(sound(f)) for f in [500, 250, 450, 250, 425, 250, 500]]
         ()
@@ -338,7 +345,7 @@ change the order of the legend entries without changing the order of the plotted
 function reverselegend!(l::Legend)
     entrygroups = l.entrygroups[]
     entrygroups[1][2] .= entrygroups[1][2] |> reverse
-    l.entrygroups[] = entrygroups
+    return l.entrygroups[] = entrygroups
 end
 
 """
@@ -388,13 +395,15 @@ function scientific(x::Real, sigdigits = 2)
         neg = ""
     end
 
-    unicode_exponent = join(['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'][parse(Int, digit) + 1]
-                            for digit in exponent)
+    unicode_exponent = join(
+        ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'][parse(Int, digit) + 1]
+            for digit in exponent
+    )
 
     formatted = split(formatted, " ")[1] * " " * split(formatted, " ")[2] * " 10" * neg *
-                unicode_exponent
+        unicode_exponent
 
-    s = replace(formatted, " × 10⁰" => "")
+    return s = replace(formatted, " × 10⁰" => "")
 end
 
 """
@@ -418,7 +427,7 @@ function lscientific(x::Real, sigdigits = 2)
 
     s = replace(formatted, "e" => "\\times 10^{")
     s = s * "}"
-    s = replace(s, "\\times 10^{0}" => "")
+    return s = replace(s, "\\times 10^{0}" => "")
 end
 
 """
@@ -450,11 +459,13 @@ axiscolorbar(ax, p; label="Time (m)")
 ```
 """
 function axiscolorbar(ax, args...; position = :rt, kwargs...)
-    C = Colorbar(ax.parent, args...;
-                 bbox = ax.scene.px_area,
-                 Makie.legend_position_to_aligns(position)...,
-                 kwargs...)
-    if !isempty(C.label[])
+    C = Colorbar(
+        ax.parent, args...;
+        bbox = ax.scene.px_area,
+        Makie.legend_position_to_aligns(position)...,
+        kwargs...
+    )
+    return if !isempty(C.label[])
         ax.alignmode = Mixed(right = 75)
     end
 end

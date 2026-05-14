@@ -14,19 +14,19 @@ using TestItemRunner
     using LaTeXStrings
 end
 
-@testitem "Scientific formatting" setup=[Setup] begin
-    x = scientific(1e-3, 1)
+@testitem "Scientific formatting" setup = [Setup] begin
+    x = scientific(1.0e-3, 1)
     @test x == "1.0 × 10⁻³"
-    x = scientific(1e-3, 0)
+    x = scientific(1.0e-3, 0)
     @test x == "1 × 10⁻³"
     x = scientific(π, 5)
     @test x == "3.14159"
     x = scientific(-π * 10^-6, 3)
     @test x == "-3.142 × 10⁻⁶"
 
-    x = lscientific(1e-3, 1)
+    x = lscientific(1.0e-3, 1)
     @test x == "1.0\\times 10^{-3}"
-    x = lscientific(1e-3, 0)
+    x = lscientific(1.0e-3, 0)
     @test x == "1\\times 10^{-3}"
     x = lscientific(π, 5)
     @test x == "3.14159"
@@ -39,7 +39,7 @@ end
     @test_nowarn Lscientific.(x)
 end
 
-@testitem "Ziggurat plot" setup=[Setup] begin
+@testitem "Ziggurat plot" setup = [Setup] begin
     x = randn(1000)
     y = randn(1000) .+ 2
     f = Figure()
@@ -50,19 +50,21 @@ end
     display(f)
 end
 
-@testitem "Bandwidth plot" setup=[Setup] begin
+@testitem "Bandwidth plot" setup = [Setup] begin
     x = range(-4π, 4π, length = 1000)
     y = sinc.(x)
     f = Figure()
     ax = Axis(f[1, 1])
     bandwidth!(ax, x, y; bandwidth = range(0.0001, 0.1, length = length(x)))
 
-    bandwidth!(ax, x, y .+ 0.25; bandwidth = range(0.5, 0.00, length = length(x)),
-               direction = :y, alpha = 0.5)
+    bandwidth!(
+        ax, x, y .+ 0.25; bandwidth = range(0.5, 0.0, length = length(x)),
+        direction = :y, alpha = 0.5
+    )
     display(f)
 end
 
-@testitem "Polar histogram" setup=[Setup] begin
+@testitem "Polar histogram" setup = [Setup] begin
     x = [rand(Distributions.VonMises(-3, 10), 10000); rand(VonMises(1, 10), 10000)]
 
     f = Figure()
@@ -72,7 +74,7 @@ end
     display(f)
 end
 
-@testitem "Polar density" setup=[Setup] begin
+@testitem "Polar density" setup = [Setup] begin
     x = [rand(Distributions.VonMises(-3, 10), 10000); rand(VonMises(1, 10), 10000)]
     f = Figure()
     ax = PolarAxis(f[1, 1])
@@ -82,12 +84,14 @@ end
     x = randn(1000) .* 2
     f = Figure()
     ax = PolarAxis(f[1, 1])
-    polardensity!(ax, x; strokewidth = 5, strokecolor = :angle,
-                  strokecolormap = cyclic, alpha = 0.5)
+    polardensity!(
+        ax, x; strokewidth = 5, strokecolor = :angle,
+        strokecolormap = cyclic, alpha = 0.5
+    )
     display(f)
 end
 
-@testitem "addlabels!" setup=[Setup] begin
+@testitem "addlabels!" setup = [Setup] begin
     f = Figure()
     gps = subdivide(f, 2, 2)
     @test_nowarn addlabels!(gps)
@@ -110,7 +114,7 @@ end
     @test_nowarn display(f)
 end
 
-@testitem "Demo figure" setup=[Setup] begin
+@testitem "Demo figure" setup = [Setup] tags = [:demo] begin
     @test_nowarn Makie.set_theme!(fathom())
     f = Fathom.demofigure()
     addlabels!(f)
@@ -144,7 +148,7 @@ end
     @test_nowarn freeze!(f)
 end
 
-@testitem "Seethrough" setup=[Setup] begin
+@testitem "Seethrough" setup = [Setup] begin
     C = sunrise
     transparent_gradient = seethrough(C)
     @test transparent_gradient isa PlotUtils.ContinuousColorGradient
@@ -152,19 +156,19 @@ end
     @test transparent_gradient isa PlotUtils.ContinuousColorGradient
 end
 
-@testitem "Write base colors to YAML" setup=[Setup] begin
+@testitem "Write base colors to YAML" setup = [Setup] tags = [:demo] begin
     include("./generate_yaml.jl")
 end
 
-@testitem "Swatches" setup=[Setup] begin
+@testitem "Swatches" setup = [Setup] tags = [:demo] begin
     include("./swatches.jl")
 end
 
-@testitem "Colormaps" setup=[Setup] begin
+@testitem "Colormaps" setup = [Setup] tags = [:demo] begin
     include("./colormaps.jl")
 end
 
-@testitem "Prism plots" setup=[Setup] begin
+@testitem "Prism plots" setup = [Setup] tags = [:demo] begin
     f = 1:100
     x = randn(1000, 4)
     y = x * [1.0; 0.5; 0.01; 1.5] .+
@@ -187,12 +191,14 @@ end
     f = OnePanel()
     limits = (0, maximum(abs.(Σ²)))
     g, ax = prismplot!(f[1, 1], H; limits, colorbarlabel = "Covariance magnitude")
-    axislegend(ax,
-               [
-                   PolyElement(color = (baikal, 0.7)),
-                   PolyElement(color = (bermejo, 0.7))
-               ],
-               ["PC 1", "PC 2"], position = :lt)
+    axislegend(
+        ax,
+        [
+            PolyElement(color = (baikal, 0.7)),
+            PolyElement(color = (bermejo, 0.7)),
+        ],
+        ["PC 1", "PC 2"], position = :lt
+    )
     ax.xlabel = ax.ylabel = "Variable"
     f
     save("./recipes/prism_light.png", f; px_per_unit = 5)
@@ -201,18 +207,20 @@ end
     f = OnePanel()
     limits = (0, maximum(abs.(Σ²)))
     g, ax = prismplot!(f[1, 1], H; limits, colorbarlabel = "Covariance magnitude")
-    axislegend(ax,
-               [
-                   PolyElement(color = (baikal, 0.7)),
-                   PolyElement(color = (bermejo, 0.7))
-               ],
-               ["PC 1", "PC 2"], position = :lt)
+    axislegend(
+        ax,
+        [
+            PolyElement(color = (baikal, 0.7)),
+            PolyElement(color = (bermejo, 0.7)),
+        ],
+        ["PC 1", "PC 2"], position = :lt
+    )
     ax.xlabel = ax.ylabel = "Variable"
     f
     save("./recipes/prism_dark.png", f; px_per_unit = 5)
 end
 
-@testitem "covellipse" setup=[Setup] begin
+@testitem "covellipse" setup = [Setup] tags = [:demo] begin
     x = randn(10000)
     y = x .+ 0.5 .* randn(10000)
     xy = hcat(x, y)
@@ -222,23 +230,27 @@ end
     Makie.set_theme!(fathom())
     f = Figure()
     ax = Axis(f[1, 1]; xlabel = "x", ylabel = "y")
-    @test_nowarn covellipse!(ax, μ, Σ², color = (baikal, 0.1),
-                             strokecolor = baikal,
-                             strokewidth = 5, scale = 2)
+    @test_nowarn covellipse!(
+        ax, μ, Σ², color = (baikal, 0.1),
+        strokecolor = baikal,
+        strokewidth = 5, scale = 2
+    )
     scatter!(ax, x, y; markersize = 2, color = (baikal, 0.42))
     save("./recipes/covellipse_light.png", f; px_per_unit = 5)
 
     Makie.set_theme!(fathom(:dark, :transparent))
     f = Figure()
     ax = Axis(f[1, 1]; xlabel = "x", ylabel = "y")
-    @test_nowarn covellipse!(ax, μ, Σ², color = (baikal, 0.1),
-                             strokecolor = baikal,
-                             strokewidth = 5, scale = 2)
+    @test_nowarn covellipse!(
+        ax, μ, Σ², color = (baikal, 0.1),
+        strokecolor = baikal,
+        strokewidth = 5, scale = 2
+    )
     scatter!(ax, x, y; markersize = 2, color = (baikal, 0.42))
     save("./recipes/covellipse_dark.png", f; px_per_unit = 5)
 end
 
-@testitem "Importall" setup=[Setup] begin # Keep this at the end
+@testitem "Importall" setup = [Setup] begin # Keep this at the end
     @test all(isnothing.(eval.(importall(Fathom))))
     Makie.set_theme!(fathom())
     save("./demos/default.png", demofigure(), px_per_unit = 5)
