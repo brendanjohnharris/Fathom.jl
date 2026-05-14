@@ -115,6 +115,11 @@ end
 end
 
 @testitem "Demo figure" setup = [Setup] tags = [:demo] begin
+
+    for f in readdir(joinpath(@__DIR__, "demos"); join = true)
+        endswith(f, ".png") && rm(f)
+    end
+
     @test_nowarn Makie.set_theme!(fathom())
     f = Fathom.demofigure()
     addlabels!(f)

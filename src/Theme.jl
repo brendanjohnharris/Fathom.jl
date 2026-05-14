@@ -29,7 +29,7 @@ tickalign = 0.5 # Crosses the axis
 
 function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize())
     return Theme(;
-        colormap = pelagic,
+        colormap = sunrise,
         strokewidth = 5,
         strokecolor = baikal,
         strokevisible = true,
