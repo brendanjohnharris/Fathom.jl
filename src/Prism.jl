@@ -22,16 +22,18 @@ magnitude. Returns an N×N matrix of `RGBA` colors (or `abs.(Σ²)` when `colorm
 
 Row/column names are supplied separately to `prismplot!`.
 """
-function prism(Σ̂²;
-               palette = [Fathom.baikal, Fathom.bermejo, Fathom.qinghai],
-               colormode = :top,
-               verbose = false)
+function prism(
+        Σ̂²;
+        palette = [Fathom.baikal, Fathom.bermejo, Fathom.qinghai],
+        colormode = :top,
+        verbose = false
+    )
     colormode ∈ (:raw, :top, :all) ||
         error("Unknown colormode $(repr(colormode)); use :raw, :top, or :all")
     m = maximum(abs, Σ̂²)
     A = iszero(m) ? zeros(size(Σ̂²)) : abs.(Σ̂²) ./ m
     N = min(length(palette), size(Σ̂², 1))
-    if colormode == :raw # * Don't color by PC's
+    return if colormode == :raw # * Don't color by PC's
         H = abs.(Σ̂²)
     else
         λ = (eigvals ∘ Symmetric ∘ Array)(Σ̂²)
@@ -41,8 +43,12 @@ function prism(Σ̂²;
         vidxs = sortperm(abs.(P[:, 1]), rev = true)
         if verbose
             printstyled("Feature weights:\n", color = :red, bold = true)
-            display(vcat(hcat("Feature", ["PC$i" for i in 1:N]...),
-                         hcat(vidxs, round.(P[vidxs, 1:N], sigdigits = 3))))
+            display(
+                vcat(
+                    hcat("Feature", ["PC$i" for i in 1:N]...),
+                    hcat(vidxs, round.(P[vidxs, 1:N], sigdigits = 3))
+                )
+            )
         end
         P = abs.(P)
         if colormode === :top # * Color by the number of PC's given by the length of the color palette
@@ -73,7 +79,7 @@ end
 
 function prismplot!(ax::Axis, H; kwargs...)
     ax.aspect = 1
-    heatmap!(ax, H; kwargs...)
+    return heatmap!(ax, H; kwargs...)
 end
 function prismplot!(ax::Axis, f, H; kwargs...)
     h = prismplot!(ax, H; kwargs...)
@@ -86,9 +92,11 @@ function prismplot!(ax::Axis, f, H; kwargs...)
     ax.yticks = (xt, string.(f))
     return h
 end
-function prismplot!(f::Makie.GridPosition, args...;
-                    colormap = seethrough(cgrad([baikal, baikal])),
-                    limits, axis = (), title = nothing, colorbarlabel = nothing, kwargs...)
+function prismplot!(
+        f::Makie.GridPosition, args...;
+        colormap = seethrough(cgrad([baikal, baikal])),
+        limits, axis = (), title = nothing, colorbarlabel = nothing, kwargs...
+    )
     i = !isnothing(title)
     ax = Axis(f[i + 1, 1]; axis...)
     p = prismplot!(ax, args...; kwargs...)
@@ -103,10 +111,10 @@ end
 function prismplot!(f::Makie.GridPosition, g, X::AbstractMatrix{<:Number}; kwargs...)
     H = prism(X)
     limits = extrema(abs.(X))
-    prismplot!(f, g, H; limits, kwargs...)
+    return prismplot!(f, g, H; limits, kwargs...)
 end
 function prismplot!(f::Makie.GridPosition, X::AbstractMatrix{<:Number}; kwargs...)
     H = prism(X)
     limits = extrema(abs.(X))
-    prismplot!(f, H; limits, kwargs...)
+    return prismplot!(f, H; limits, kwargs...)
 end

@@ -1,5 +1,5 @@
 export addlabels!, OnePanel, TwoPanel, FourPanel, SixPanel, NinePanel, TwelvePanel,
-       subdivide
+    subdivide
 import Makie.GridLayoutBase.GridContent
 
 # * A set of consistent figure layouts
@@ -49,14 +49,14 @@ function Base.getindex(A::SubdivideArray, i::Int)
     nrows, ncols = size(A)
     row = div(i - 1, ncols) + 1
     col = mod(i - 1, ncols) + 1
-    A.parent[row, col]
+    return A.parent[row, col]
 end
 
 function Base.setindex!(A::SubdivideArray, v, i::Int)
     nrows, ncols = size(A)
     row = div(i - 1, ncols) + 1
     col = mod(i - 1, ncols) + 1
-    A.parent[row, col] = v
+    return A.parent[row, col] = v
 end
 
 """
@@ -74,11 +74,11 @@ display(f)
 ```
 """
 function subdivide(f, nrows::Int, ncols::Int)
-    grid = [f[i, j] for i in 1:nrows, j in 1:ncols] |> SubdivideArray
+    return grid = [f[i, j] for i in 1:nrows, j in 1:ncols] |> SubdivideArray
 end
 function subdivide(f, sz::Tuple{Int, Int})
     nrows, ncols = sz
-    subdivide(f, nrows, ncols)
+    return subdivide(f, nrows, ncols)
 end
 
 """
@@ -118,8 +118,10 @@ addlabels!(gs)
 display(f)
 ```
 """
-function addlabels!(gridpositions, f::Figure = first(gridpositions).layout.parent,
-                    text = nothing; kwargs...)
+function addlabels!(
+        gridpositions, f::Figure = first(gridpositions).layout.parent,
+        text = nothing; kwargs...
+    )
     if !(eltype(gridpositions) <: GridPosition)
         throw(TypeError(:addlabels!, "Fathom", GridPosition, first(gridpositions)))
     end
@@ -137,10 +139,13 @@ function addlabels!(gridpositions, f::Figure = first(gridpositions).layout.paren
     end
 
     for (i, l) in enumerate(gridpositions)
-        Label(l[1, 1, TopLeft()]; halign = :left, valign = :bottom,
-              text = text[i],
-              fontsize = 22, padding = (-5, 0, 5, 0), kwargs...)
+        Label(
+            l[1, 1, TopLeft()]; halign = :left, valign = :bottom,
+            text = text[i],
+            fontsize = 22, padding = (-5, 0, 5, 0), kwargs...
+        )
     end
+    return
 end
 
 """
@@ -170,15 +175,17 @@ display(f)
 ```
 See also: [`addlabels!`](@ref)
 """
-function addlabels!(f::Figure, text = nothing;
-                    dims = 2,
-                    allowedblocks = [Axis, Axis3, PolarAxis],
-                    recurse = [GridContent, GridLayout], kwargs...)
+function addlabels!(
+        f::Figure, text = nothing;
+        dims = 2,
+        allowedblocks = [Axis, Axis3, PolarAxis],
+        recurse = [GridContent, GridLayout], kwargs...
+    )
     content = [Vector{Any}(f.layout.content)]
     function isinrecurse(x)
         types = typeof.(x)
         checks = t -> any([t <: r for r in recurse])
-        checks.(types)
+        return checks.(types)
     end
     while any(isinrecurse(only(content)))
         contents = only(content)
@@ -228,5 +235,5 @@ function addlabels!(f::Figure, text = nothing;
     end
     content = content[idxs]
     position = position[idxs]
-    addlabels!(content, f, text; kwargs...)
+    return addlabels!(content, f, text; kwargs...)
 end

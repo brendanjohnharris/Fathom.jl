@@ -4,7 +4,7 @@ abstract type AttrdocsBlocks <: Documenter.Expanders.NestedExpanderPipeline end
 
 Documenter.Selectors.order(::Type{AttrdocsBlocks}) = 8.0 # like @example
 function Documenter.Selectors.matcher(::Type{AttrdocsBlocks}, node, page, doc)
-    Documenter.iscode(node, r"^@attrdocs")
+    return Documenter.iscode(node, r"^@attrdocs")
 end
 
 # this type is just for a helper node which we can push child elements to that are
@@ -15,8 +15,10 @@ end
 
 MarkdownAST.can_contain(::Container, ::MarkdownAST.AbstractElement) = true
 
-function DocumenterVitepress.render(io::IO, mime::MIME"text/plain", node::MarkdownAST.Node,
-                                    c::Container, page, doc; kwargs...)
+function DocumenterVitepress.render(
+        io::IO, mime::MIME"text/plain", node::MarkdownAST.Node,
+        c::Container, page, doc; kwargs...
+    )
     return DocumenterVitepress.render(io, mime, node, node.children, page, doc; kwargs...)
 end
 
@@ -36,8 +38,12 @@ function attrs_examples_docs_defaults(type::Type{<:Makie.Plot})
 
     attrkeys = sort(collect(keys(metadata)))
     all_examples = Makie.attribute_examples(type)
-    all_docs = Dict([(attr => something(meta.docstring, "No docs available."))
-                     for (attr, meta) in metadata])
+    all_docs = Dict(
+        [
+            (attr => something(meta.docstring, "No docs available."))
+                for (attr, meta) in metadata
+        ]
+    )
     all_defaults = Dict([(attr => meta.default_expr) for (attr, meta) in metadata])
 
     return (; attrkeys, all_examples, all_docs, all_defaults)
@@ -81,8 +87,10 @@ function Documenter.Selectors.runner(::Type{AttrdocsBlocks}, node, page, doc)
     # treatment to headings that documenter would normally do (which does not happen in the nested expand pipeline)
     # and for running the @figure nodes
     for childnode in collect(node.children)
-        Documenter.Selectors.dispatch(Documenter.Expanders.ExpanderPipeline, childnode,
-                                      page, doc)
+        Documenter.Selectors.dispatch(
+            Documenter.Expanders.ExpanderPipeline, childnode,
+            page, doc
+        )
         Documenter.expand_recursively(childnode, page, doc)
     end
 
@@ -95,7 +103,7 @@ abstract type ShortDocsBlocks <: Documenter.Expanders.NestedExpanderPipeline end
 
 Documenter.Selectors.order(::Type{ShortDocsBlocks}) = 3.0 # like @docs
 function Documenter.Selectors.matcher(::Type{ShortDocsBlocks}, node, page, doc)
-    Documenter.iscode(node, r"^@shortdocs")
+    return Documenter.iscode(node, r"^@shortdocs")
 end
 
 function unlink_with_all_following_siblings!(node)

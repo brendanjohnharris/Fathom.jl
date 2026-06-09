@@ -69,9 +69,9 @@ end
 end
 
 @testitem "set_luminance" tags = [:fix] setup = [Setup] begin
-    @test convert(Fathom.Oklab, Fathom.RGB(set_luminance(baikal, 0.5))).l ≈ 0.5 atol = 1e-6
+    @test convert(Fathom.Oklab, Fathom.RGB(set_luminance(baikal, 0.5))).l ≈ 0.5 atol = 1.0e-6
     # alpha preserved (Float32 round-trip, so compare with a tolerance)
-    @test Fathom.Colors.alpha(set_luminance(Fathom.RGBA(0.2, 0.4, 0.6, 0.3), 0.7)) ≈ 0.3 atol = 1e-6
+    @test Fathom.Colors.alpha(set_luminance(Fathom.RGBA(0.2, 0.4, 0.6, 0.3), 0.7)) ≈ 0.3 atol = 1.0e-6
 end
 
 @testitem "widen" tags = [:fix] setup = [Setup] begin
