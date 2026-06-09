@@ -29,17 +29,6 @@ x = randn(100)
 ziggurat(x)
 ```
 
-## [hill](@ref)
-
-```@shortdocs; canonical=false
-hill
-```
-
-```@example Fathom
-x = randn(100)
-hill(x)
-```
-
 
 ## [bandwidth](@ref)
 

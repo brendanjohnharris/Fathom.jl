@@ -148,7 +148,6 @@ The following recipes are exported:
 - `covellipse`
 - `prism`
 - `ziggurat`
-- `hill`
 - `bandwidth`
 
 Details and examples can be found in the [recipes docs](https://brendanjohnharris.github.io/Fathom.jl/dev/recipes/).
