@@ -4,6 +4,7 @@ import Makie: DocThemer, ATTRIBUTES, DocInstances, INSTANCES
 
 import Makie: mixin_generic_plot_attributes, mixin_colormap_attributes,
     documented_attributes, attribute_names, DocumentedAttributes, automatic
+import Makie.StatsBase
 
 function get_attrs(P::Type{<:Plot})
     # Makie.attribute_default_expressions(P)
@@ -72,19 +73,27 @@ function Makie.plot!(plot::Ziggurat{<:Tuple{AbstractVector{<:Real}}})
         Makie.to_color(isnothing(a) ? c : (c, a))
     end
 
-    hist!(plot, plot.attributes, plot.x; color = plot.fillcoloralpha, strokewidth = 0)
+    hist!(plot, plot.attributes, plot.values; color = plot.fillcoloralpha, strokewidth = 0)
     stephist!(
-        plot, plot.attributes, plot.x; color = plot.strokecolor,
+        plot, plot.attributes, plot.values; color = plot.strokecolor,
         linestyle = plot.linestyle, linewidth = plot.strokewidth,
         visible = map(!, plot.strokearound)
     )
 
-    # Build a closed step path when strokearound is true
-    map!(plot.attributes, [:x, :strokearound, :bins], :linepoints) do x, strokearound, bins
+    # Build a closed step path when strokearound is true. Compute the histogram the same way
+    # `hist!` does (honouring `bins`, `normalization` and `weights`) so the outline traces
+    # the bars rather than a differently-binned, unnormalised shape.
+    map!(
+        plot.attributes, [:values, :strokearound, :bins, :normalization, :weights],
+        :linepoints
+    ) do x, strokearound, bins, normalization, weights
         if !strokearound || isempty(x)
             return Point2f[]
         end
-        h = StatsBase.fit(StatsBase.Histogram, x; nbins = bins)
+        edges = bins isa Int ? range(minimum(x), maximum(x), length = bins + 1) : bins
+        w = weights === automatic ? () : (StatsBase.weights(weights),)
+        h = StatsBase.fit(StatsBase.Histogram, x, w..., edges)
+        h = StatsBase.normalize(h; mode = normalization)
         edges = h.edges[1]
         weights = h.weights
         ps = Point2f[]

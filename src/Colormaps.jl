@@ -1,35 +1,3 @@
-function perceived_lightness(c::AbstractRGB)
-    # ? https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
-    r, g, b = c.r, c.g, c.b
-    lin(c) = c ≤ 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055)^2.4
-    Y = 0.2126lin(r) + 0.7152lin(g) + 0.0722lin(b)
-    return Y ≤ (216 / 24389) ? Y * (24389 / 27) : 116 * Y^(1 / 3) - 16
-end
-export perceived_lightness
-
-function make_lightness_linear(cs; flat = false, tol = 0.001)
-    ls = perceived_lightness.(RGB.(cs))
-    if flat
-        mb = [mean(ls), 0] # Constant brightness
-    else
-        mb = [ones(length(ls)) (1:length(ls))] \ ls
-    end
-    L = mb[1] .+ mb[2] * (1:length(ls)) |> collect
-    return map(enumerate(cs)) do (i, c)
-        l = L[i]
-        while abs(l - perceived_lightness(c)) > tol &&
-                perceived_lightness(c) ∈ 0.1 .. 99.9
-            if perceived_lightness(c) > l
-                c = darken(c, tol)
-            else
-                c = brighten(c, tol)
-            end
-        end
-        return c
-    end
-end
-export make_lightness_linear
-
 oklch(c) = c |> values |> collect .|> Oklch
 oklch(c::Colorant) = Oklch(c)
 oklab(c) = c |> values |> collect .|> Oklab

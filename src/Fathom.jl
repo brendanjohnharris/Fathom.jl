@@ -10,7 +10,7 @@ using Preferences
 using Makie.LaTeXStrings
 import Makie.IntervalSets: Interval
 
-export fathom, importall, freeze!, clip, axiscolorbar,
+export fathom, freeze!, clip, axiscolorbar,
     reverselegend!,
     scientific, lscientific, Lscientific,
     percentageticks, terseticks
@@ -100,7 +100,18 @@ include("Fonts.jl")
 
 
 """
-Slightly widen an interval by a fraction δ
+    widen(x, δ = 0.05)
+
+Widen the two-element collection or `Interval` `x` symmetrically by a fraction `δ` of its
+span. Each endpoint moves outward by `δ * (x[2] - x[1])`, so `δ = 0.05` adds a 5% margin on
+each side. Returns the same kind of object as `x` (a vector for a two-element input, an
+`Interval` for an `Interval`).
+
+# Example
+```julia
+widen([0, 1], 0.1)      # [-0.1, 1.1]
+widen(0 .. 1, 0.1)      # -0.1 .. 1.1
+```
 """
 function widen(x, δ = 0.05)
     @assert length(x) == 2
@@ -327,42 +338,19 @@ function clip(fig = Makie.current_figure(), fmt = :png; kwargs...)
     return tmp
 end
 
-function beep()
-    return try
-        sound(f) = [`play -q -n synth 0.1 sin $f`]
-        @async [run.(sound(f)) for f in [500, 250, 450, 250, 425, 250, 500]]
-        ()
-    catch
-    end
-end
-
 """
     reverselegend!(l::Legend)
 
 Reverse the order of the legend entries in an Axis object. This is useful when you want to
 change the order of the legend entries without changing the order of the plotted data.
+All entry groups are reversed.
 """
 function reverselegend!(l::Legend)
     entrygroups = l.entrygroups[]
-    entrygroups[1][2] .= entrygroups[1][2] |> reverse
+    for group in entrygroups
+        group[2] .= group[2] |> reverse
+    end
     return l.entrygroups[] = entrygroups
-end
-
-"""
-    importall(module)
-
-Return an array of expressions that can be used to import all names from a module.
-
-# Example
-```julia
-importall(module) .|> eval
-```
-"""
-function importall(mdl)
-    mdl = eval(mdl)
-    fullname = Symbol(mdl)
-    exp = names(eval(mdl), all = true)
-    return [:(import $fullname.$e) for e in exp]
 end
 
 """
@@ -380,6 +368,7 @@ scientific(1/123.456, 2) # "8.10 × 10⁻³"
 ```
 """
 function scientific(x::Real, sigdigits = 2)
+    isfinite(x) || return string(x)
     formatted = pyfmt(".$(sigdigits)e", x)
     formatted = replace(formatted, "e+0" => "e+")
     formatted = replace(formatted, "e-0" => "e-")
@@ -420,6 +409,7 @@ l = LaTeXString(x)
 ```
 """
 function lscientific(x::Real, sigdigits = 2)
+    isfinite(x) || return string(x)
     formatted = pyfmt(".$(sigdigits)e", x)
     formatted = replace(formatted, "e+0" => "e+")
     formatted = replace(formatted, "e-0" => "e-")
@@ -431,7 +421,7 @@ function lscientific(x::Real, sigdigits = 2)
 end
 
 """
-    lscientific(x::Real, sigdigits=2)
+    Lscientific(x::Real, sigdigits=2)
 
 Return a string representation of a number in scientific notation with a specified number of
 significant digits, as a LaTeXString.
@@ -461,7 +451,7 @@ axiscolorbar(ax, p; label="Time (m)")
 function axiscolorbar(ax, args...; position = :rt, kwargs...)
     C = Colorbar(
         ax.parent, args...;
-        bbox = ax.scene.px_area,
+        bbox = ax.scene.viewport,
         Makie.legend_position_to_aligns(position)...,
         kwargs...
     )
@@ -503,8 +493,5 @@ include("Polar.jl")
 include("Prism.jl")
 include("CovEllipse.jl")
 include("Layouts.jl")
-if haskey(ENV, "FATHOM_PATCHES")
-    include(joinpath(@__DIR__, "Patches.jl"))
-end
 
 end

@@ -202,8 +202,6 @@ Some available options are:
 - `:transparent`: Make the background transparent.
 - `:minorgrid`: Show minor gridlines.
 - `:serif`: Use a serif font.
-- `:redblue`: Use a red-blue colormap.
-- `:gray`: Use a grayscale colormap.
 - `:physics`: Set a theme that resembles typical plots in physics journals.
 """
 function fathom(options...; fonts = fathomfonts())

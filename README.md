@@ -81,13 +81,13 @@ lscientific(1/123.456, 3) # "8.10 \\times 10^{-3}"
 
 ### brighten and darken
 
-Brighten a color by a given factor by blending it with white:
+Brighten a color by a given factor:
 
 ```julia
 brighten(baikal, 0.2) # Brightens the color by 20%
 ```
 
-Or, darken a color by blending it with black:
+Or, darken a color:
 ```julia
 darken(baikal, 0.2) # Darkens the color by 20%
 ```
@@ -115,13 +115,6 @@ Copies a Makie figure to the clipboard.
 ```julia
 fig, ax, plt = scatter(rand(10), rand(10))
 clip(fig)
-```
-
-### importall
-
-Imports all symbols from a module into the current scope. Use with caution.
-```julia
-importall(Fathom) .|> eval
 ```
 
 # Colors

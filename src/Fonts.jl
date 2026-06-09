@@ -2,46 +2,43 @@ fathomfontsize() = 14
 
 const FONT_DIR = joinpath(@__DIR__, "..", "fonts")
 
-const serifbase = joinpath(FONT_DIR, "SourceSans3")
+const sansbase = joinpath(FONT_DIR, "SourceSans3")
 const stixbase = joinpath(FONT_DIR, "STIXTwoText")
 const mathbase = joinpath(FONT_DIR, "STIXTwoMath")
-
-# * Bundled Source Sans 3 font
-const sans = joinpath(FONT_DIR, "SourceSans3-Regular.ttf")
 
 
 function fathomfonts(font = :sans)
     return if font === :sans
 
         Makie.MathTeXEngine.set_texfont_family!(;
-            regular = joinpath(serifbase, "SourceSans3-Regular.ttf"),
-            bold = joinpath(serifbase, "SourceSans3-Bold.ttf"),
-            italic = joinpath(serifbase, "SourceSans3-Italic.ttf"),
-            bolditalic = joinpath(serifbase, "SourceSans3-BoldItalic.ttf"),
-            medium = joinpath(serifbase, "SourceSans3-Medium.ttf"),
-            mediumitalic = joinpath(serifbase, "SourceSans3-MediumItalic.ttf"),
-            semibold = joinpath(serifbase, "SourceSans3-SemiBold.ttf"),
-            semibolditalic = joinpath(serifbase, "SourceSans3-SemiBoldItalic.ttf"),
+            regular = joinpath(sansbase, "SourceSans3-Regular.ttf"),
+            bold = joinpath(sansbase, "SourceSans3-Bold.ttf"),
+            italic = joinpath(sansbase, "SourceSans3-Italic.ttf"),
+            bolditalic = joinpath(sansbase, "SourceSans3-BoldItalic.ttf"),
+            medium = joinpath(sansbase, "SourceSans3-Medium.ttf"),
+            mediumitalic = joinpath(sansbase, "SourceSans3-MediumItalic.ttf"),
+            semibold = joinpath(sansbase, "SourceSans3-SemiBold.ttf"),
+            semibolditalic = joinpath(sansbase, "SourceSans3-SemiBoldItalic.ttf"),
             math = joinpath(mathbase, "STIXTwoMath-Regular.ttf") # Math stays stix
         )
 
         Attributes(
-            :black => joinpath(serifbase, "SourceSans3-Black.ttf"),
-            :blackitalic => joinpath(serifbase, "SourceSans3-BlackItalic.ttf"),
-            :bold => joinpath(serifbase, "SourceSans3-Bold.ttf"),
-            :bolditalic => joinpath(serifbase, "SourceSans3-BoldItalic.ttf"),
-            :extrabold => joinpath(serifbase, "SourceSans3-ExtraBold.ttf"),
-            :extrabolditalic => joinpath(serifbase, "SourceSans3-ExtraBoldItalic.ttf"),
-            :extralight => joinpath(serifbase, "SourceSans3-ExtraLight.ttf"),
-            :extralightitalic => joinpath(serifbase, "SourceSans3-ExtraLightItalic.ttf"),
-            :italic => joinpath(serifbase, "SourceSans3-Italic.ttf"),
-            :light => joinpath(serifbase, "SourceSans3-Light.ttf"),
-            :lightitalic => joinpath(serifbase, "SourceSans3-LightItalic.ttf"),
-            :medium => joinpath(serifbase, "SourceSans3-Medium.ttf"),
-            :mediumitalic => joinpath(serifbase, "SourceSans3-MediumItalic.ttf"),
-            :regular => joinpath(serifbase, "SourceSans3-Regular.ttf"),
-            :semibold => joinpath(serifbase, "SourceSans3-SemiBold.ttf"),
-            :semibolditalic => joinpath(serifbase, "SourceSans3-SemiBoldItalic.ttf")
+            :black => joinpath(sansbase, "SourceSans3-Black.ttf"),
+            :blackitalic => joinpath(sansbase, "SourceSans3-BlackItalic.ttf"),
+            :bold => joinpath(sansbase, "SourceSans3-Bold.ttf"),
+            :bolditalic => joinpath(sansbase, "SourceSans3-BoldItalic.ttf"),
+            :extrabold => joinpath(sansbase, "SourceSans3-ExtraBold.ttf"),
+            :extrabolditalic => joinpath(sansbase, "SourceSans3-ExtraBoldItalic.ttf"),
+            :extralight => joinpath(sansbase, "SourceSans3-ExtraLight.ttf"),
+            :extralightitalic => joinpath(sansbase, "SourceSans3-ExtraLightItalic.ttf"),
+            :italic => joinpath(sansbase, "SourceSans3-Italic.ttf"),
+            :light => joinpath(sansbase, "SourceSans3-Light.ttf"),
+            :lightitalic => joinpath(sansbase, "SourceSans3-LightItalic.ttf"),
+            :medium => joinpath(sansbase, "SourceSans3-Medium.ttf"),
+            :mediumitalic => joinpath(sansbase, "SourceSans3-MediumItalic.ttf"),
+            :regular => joinpath(sansbase, "SourceSans3-Regular.ttf"),
+            :semibold => joinpath(sansbase, "SourceSans3-SemiBold.ttf"),
+            :semibolditalic => joinpath(sansbase, "SourceSans3-SemiBoldItalic.ttf")
         )
 
 

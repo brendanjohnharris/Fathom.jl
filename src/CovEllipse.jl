@@ -23,8 +23,9 @@ end
 
 function Makie.plot!(plot::CovEllipse)
     map!(plot.attributes, [:μ, :Σ², :scale, :vertices], :x) do μ, Σ², scale, vertices
-        if length(μ) != size(Σ², 1)
-            throw(ArgumentError("Dimension mismatch between mean and covariance in CovEllipse"))
+        if size(Σ², 1) != 2 || size(Σ², 2) != 2 || length(μ) != 2
+            throw(ArgumentError("CovEllipse requires a 2×2 covariance and a length-2 mean; " *
+                                "got size(Σ²)=$(size(Σ²)) and length(μ)=$(length(μ))"))
         end
         θ = vertices isa Integer ? range(0, 2π; length = vertices) : vertices
         A = sqrt(Σ²) * [cos.(θ)'; sin.(θ)'] .* scale

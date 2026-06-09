@@ -82,7 +82,23 @@ function subdivide(f, sz::Tuple{Int, Int})
 end
 
 """
-    addlabels!(gridpositions, f::Figure, [text]; dims=2, kwargs...)
+    _default_label(i::Integer)
+
+Return the default panel label for the 1-based index `i` as a parenthesised, spreadsheet-style
+letter sequence: `(a), (b), …, (z), (aa), (ab), …`. Unlike a plain `Char` shift this stays
+alphabetic past 26 panels.
+"""
+function _default_label(i::Integer)
+    s = ""
+    while i > 0
+        i, r = divrem(i - 1, 26)
+        s = string(Char('a' + r), s)
+    end
+    return "($s)"
+end
+
+"""
+    addlabels!(gridpositions, f::Figure, [text]; kwargs...)
 
 Add labels to a provided grid layout. The labels are incremented in the linear order of the grid positions.
 
@@ -111,8 +127,7 @@ function addlabels!(gridpositions, f::Figure = first(gridpositions).layout.paren
     n = length(gridpositions)
 
     if isnothing(text)
-        text = Char.(1:n) .+ 96
-        text = ["($s)" for s in text]
+        text = _default_label.(1:n)
     end
     if text isa Function
         text = text.(1:n)
@@ -139,8 +154,8 @@ Add labels to a provided grid layout, automatically searching for blocks to labe
 - `text`: Text to be displayed in the labels, as either an interator of strings or a
   function applied to the integer indices of the grid positions [optional; defaults to (a),
   (b), ...]
-- `dims`: The dimension to increment labels; `1` for top-to-bottom increases (column major),
-  or `2` for right-to-left increases (row-major; default).
+- `dims`: The order in which labels are incremented; `1` increments down each column first
+  (column-major), `2` increments along each row first (row-major; default).
 - `allowedblocks`: The types of blocks to consider for labelling (optional; defaults to `[Axis,
   Axis3, PolarAxis]`).
 - `recurse`: The types of blocks to recurse into for searching the `allowedblocks`
@@ -199,8 +214,9 @@ function addlabels!(f::Figure, text = nothing;
     end
     position = last.(content)
     content = first.(content)
-    content = unique(content) # * Gets the grid layouts for each block
 
+    # Keep one (content, position) pair per unique grid layout, preserving alignment by
+    # selecting first-occurrence indices into the ORIGINAL `content`.
     idxs = indexin(unique(content), content)
     content = content[idxs]
     position = position[idxs]

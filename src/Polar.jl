@@ -7,7 +7,8 @@ import Makie.StatsBase
 
 function pick_polarhist_edges(vals, bins)
     if bins isa Int
-        return range(-1.0π, 1.0π, length = bins)
+        # `bins` bars require `bins + 1` edges
+        return range(-1.0π, 1.0π, length = bins + 1)
     else
         if !issorted(bins)
             error("Histogram bins are not sorted: $bins")
@@ -19,14 +20,15 @@ end
 function hist_center_weights(values, edges, normalization, scale_to, wgts)
     w = wgts === automatic ? () : (StatsBase.weights(wgts),)
     h = StatsBase.fit(StatsBase.Histogram, values, w..., edges)
-    h_norm = StatsBase.normalize(h; mode = normalization)
+    # `normalize` divides by the total weight, which is 0 for empty/all-zero data
+    h_norm = sum(h.weights) == 0 ? h : StatsBase.normalize(h; mode = normalization)
     weights = h_norm.weights
     centers = edges[1:(end - 1)] .+ (diff(edges) ./ 2)
     if scale_to === :flip
         weights .= -weights
     elseif !isnothing(scale_to)
         max = maximum(weights)
-        weights .= weights ./ max .* scale_to
+        max == 0 || (weights .= weights ./ max .* scale_to)
     end
     return centers, weights
 end
@@ -96,7 +98,8 @@ function default_bandwidth_circular(data, alpha::Float64 = 0.09)
     ndata <= 1 && return alpha
 
     # Calculate width using variance and IQR
-    var_width = sqrt.(2 * (1 - abs.(mean(exp.(im .* data))))) # Batschelet, 1981, no log
+    # clamp at 0: for (near-)constant data `abs(mean(exp(im*data)))` can round just above 1
+    var_width = sqrt(max(0.0, 2 * (1 - abs(mean(exp.(im .* data)))))) # Batschelet, 1981, no log
     q25, q75 = quantile(data, [0.25, 0.75])
     quantile_width = (q75 - q25) / 1.34
     width = min(var_width, quantile_width)
@@ -148,7 +151,8 @@ end
 
 function polarkde(vals; bandwidth = default_bandwidth_circular(vals), kwargs...)
     bandwidth isa Function && (bandwidth = bandwidth(vals))
-    minimum(vals) <= -π || maximum(vals) > π && error("Values must be in the range (-π, π)")
+    (minimum(vals) < -π || maximum(vals) > π) && error("Values must be in the range [-π, π]")
+    bandwidth > 0 || error("bandwidth must be positive, got $bandwidth")
     dist = Distributions.VonMises(1 / bandwidth)
     boundary = (-π, π)
     p = kde(vals, dist; boundary, kwargs...)
@@ -175,6 +179,7 @@ end
 
 function Makie.plot!(plot::PolarDensity{<:Tuple{AbstractVector{<:Real}}})
     map!(plot.attributes, [:x, :bandwidth], [:xs, :zs, :ps, :points]) do x, b
+        x = mod.(x .+ π, 2 * π) .- π  # wrap angles to [-π, π), matching PolarHist
         pdf = polarkde(x; bandwidth = b)
         xs = getfield(pdf, :x) |> collect
         ps = getfield(pdf, :density) |> collect

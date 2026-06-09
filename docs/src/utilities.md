@@ -109,7 +109,7 @@ reverselegend!
 
 ## brighten and darken
 
-Brighten a color by a given factor by blending it with white:
+Brighten a color by a given factor:
 
 ```@example Fathom
 c = baikal
@@ -117,12 +117,27 @@ b = brighten(c, 0.2) # Brightens the color by 20%
 cgrad([c, b], categorical=true) # hide
 ```
 
-Or, darken a color by blending it with black:
+Or, darken a color:
 
 ```@example Fathom
 c = baikal
 d = darken(c, 0.2) # Darkens the color by 20%
 cgrad([c, d], categorical=true) # hide
+```
+
+## set_luminance
+
+Set a colour's Oklab lightness to an absolute value on the `L ∈ [0, 1]` scale, preserving its
+chroma and alpha.
+
+```@example Fathom
+c = baikal
+ls = [set_luminance(c, l) for l in 0.2:0.2:0.8]
+cgrad(ls, categorical=true) # hide
+```
+
+```@docs
+set_luminance
 ```
 
 ## widen
@@ -158,16 +173,4 @@ clip(fig)
 
 ```@docs
 clip
-```
-
-## importall
-
-Imports all symbols from a module into the current scope. Use with caution.
-
-```julia
-importall(Fathom) .|> eval
-```
-
-```@docs
-importall
 ```

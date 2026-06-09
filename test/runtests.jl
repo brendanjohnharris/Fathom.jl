@@ -255,8 +255,7 @@ end
     save("./recipes/covellipse_dark.png", f; px_per_unit = 5)
 end
 
-@testitem "Importall" setup = [Setup] begin # Keep this at the end
-    @test all(isnothing.(eval.(importall(Fathom))))
+@testitem "Default demo" setup = [Setup] begin
     Makie.set_theme!(fathom())
-    save("./demos/default.png", demofigure(), px_per_unit = 5)
+    save("./demos/default.png", Fathom.demofigure(), px_per_unit = 5)
 end
