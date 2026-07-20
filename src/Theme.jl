@@ -213,8 +213,7 @@ function fathom(options...; fonts = fathomfonts())
     else
         thm = _fathom(; globalfonts = fonts)
     end
-    options = collect(options)
-    options = options[options .!= :serif]
+    options = filter(!=(:serif), options)   # keeps a Tuple; avoids collect(())→Vector{Union{}} + its ambiguous getindex
     _fathom!.((thm,), Val.(options))
     return thm
 end
