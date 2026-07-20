@@ -16,7 +16,8 @@ export fathom, freeze!, clip, axiscolorbar,
     percentageticks, terseticks
 
 function __init__()
-    return ENV["UNITFUL_FANCY_EXPONENTS"] = true
+    get!(ENV, "UNITFUL_FANCY_EXPONENTS", "true")
+    return
 end
 
 """

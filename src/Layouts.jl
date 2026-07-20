@@ -3,32 +3,32 @@ export addlabels!, OnePanel, TwoPanel, FourPanel, SixPanel, NinePanel, TwelvePan
 import Makie.GridLayoutBase.GridContent
 
 # * A set of consistent figure layouts
-function _panels(args...; size = (720, 270), scale = 1.0, kwargs...)
-    f = Figure(args...; size = size .* scale, kwargs...)
+function _panels(args...; height = 270, width = 720, scale = 1.0, kwargs...)
+    f = Figure(args...; size = (width, height) .* scale, kwargs...)
     return f
 end
 function OnePanel(args...; kwargs...)
-    f = _panels(args...; size = (360, 270), kwargs...)
+    f = _panels(args...; height = 270, width = 360, kwargs...)
     return f
 end
 function TwoPanel(args...; kwargs...)
-    f = _panels(args...; size = (720, 270), kwargs...)
+    f = _panels(args...; height = 270, width = 720, kwargs...)
     return f
 end
 function FourPanel(args...; kwargs...)
-    f = _panels(args...; size = (720, 540), kwargs...)
+    f = _panels(args...; height = 540, width = 720, kwargs...)
     return f
 end
 function SixPanel(args...; kwargs...)
-    f = _panels(args...; size = (720, 810), kwargs...)
+    f = _panels(args...; height = 810, width = 720, kwargs...)
     return f
 end
 function NinePanel(args...; kwargs...)
-    f = _panels(args...; size = (1080, 810), kwargs...)
+    f = _panels(args...; height = 810, width = 1080, kwargs...)
     return f
 end
 function TwelvePanel(args...; kwargs...)
-    f = _panels(args...; size = (1080, 1080), kwargs...)
+    f = _panels(args...; height = 1080, width = 1080, kwargs...)
     return f
 end
 
@@ -97,8 +97,16 @@ function _default_label(i::Integer)
     return "($s)"
 end
 
+# Broadcast a scalar offset to all `n` labels, or validate that a per-label collection covers
+# them (extra entries are ignored; too few is an error).
+function _peroffset(x, n, name)
+    x isa Union{Tuple, AbstractVector} || return fill(x, n)
+    length(x) >= n && return x
+    return error("`$name` has length $(length(x)), but $n labels need placing")
+end
+
 """
-    addlabels!(gridpositions, f::Figure, [text]; kwargs...)
+    addlabels!(gridpositions, f::Figure, [text]; dx = 0, dy = 0, fontsize = 22, kwargs...)
 
 Add labels to a provided grid layout. The labels are incremented in the linear order of the grid positions.
 
@@ -108,6 +116,11 @@ Add labels to a provided grid layout. The labels are incremented in the linear o
 - `text`: Text to be displayed in the labels, as either an interator of strings or a
   function applied to the integer indices of the grid positions [optional; defaults to (a),
   (b), ...]
+- `dx`, `dy`: The horizontal and vertical shift of each label from its panel's top-left
+  corner, in points (positive `dx` rightward, positive `dy` upward; defaults `0`, `0`). A
+  scalar applies to every label; a tuple/vector applies element-wise to labels `(a), (b), …`
+  and must provide at least as many offsets as there are labels.
+- `fontsize`: The label font size (default `22`).
 - `kwargs`: Keyword arguments to be passed to the `Label` function.
 
 ## Examples
@@ -120,7 +133,7 @@ display(f)
 """
 function addlabels!(
         gridpositions, f::Figure = first(gridpositions).layout.parent,
-        text = nothing; kwargs...
+        text = nothing; dx = 0, dy = 0, fontsize = 22, kwargs...
     )
     if !(eltype(gridpositions) <: GridPosition)
         throw(TypeError(:addlabels!, "Fathom", GridPosition, first(gridpositions)))
@@ -138,19 +151,42 @@ function addlabels!(
         error("Number of labels does not match the number of valid blocks")
     end
 
+    dxs = _peroffset(dx, n, "dx")
+    dys = _peroffset(dy, n, "dy")
+
     for (i, l) in enumerate(gridpositions)
-        Label(
+        lab = Label(
             l[1, 1, TopLeft()]; halign = :left, valign = :bottom,
-            text = text[i],
-            fontsize = 22, padding = (-5, 0, 5, 0), kwargs...
+            text = text[i], fontsize, kwargs...
         )
+        # translate! rather than padding: Makie's Label padding resizes the box within an
+        # auto-sizing protrusion (nonlinear in x, clamped in +y), so it can't translate.
+        translate!(lab.blockscene, dxs[i], dys[i], 0)
     end
     return
 end
 
+# Collect `block => (row, col)` for every allowed block, accumulating absolute grid
+# positions across nested layouts in a single top-down descent.
+function _labeltargets(
+        gl::GridLayout, allowed, roff = 0, coff = 0,
+        acc = Pair{Any, Tuple{Int, Int}}[]
+    )
+    for gc in gl.content
+        r = roff + gc.span.rows.start - 1
+        c = coff + gc.span.cols.start - 1
+        block = gc.content
+        if block isa GridLayout
+            _labeltargets(block, allowed, r, c, acc)  # descend, carrying the offset
+        elseif any(block isa T for T in allowed)
+            push!(acc, block => (r, c))
+        end
+    end
+    return acc
+end
+
 """
-    addlabels!(f::Figure, [text]; dims=2, allowedblocks = [Axis, Axis3, PolarAxis], recurse =
-    [GridContent, GridLayout], kwargs...)
+    addlabels!(f::Figure, [text]; dims=2, allowedblocks = [Axis, Axis3, PolarAxis], kwargs...)
 
 Add labels to a provided grid layout, automatically searching for blocks to label.
 
@@ -162,9 +198,7 @@ Add labels to a provided grid layout, automatically searching for blocks to labe
 - `dims`: The order in which labels are incremented; `1` increments down each column first
   (column-major), `2` increments along each row first (row-major; default).
 - `allowedblocks`: The types of blocks to consider for labelling (optional; defaults to `[Axis,
-  Axis3, PolarAxis]`).
-- `recurse`: The types of blocks to recurse into for searching the `allowedblocks`
-  (optional; defaults to `[GridContent, GridLayout]`).
+  Axis3, PolarAxis]`). Nested `GridLayout`s are always recursed into.
 - `kwargs`: Keyword arguments to be passed to the `Label` function.
 
 ## Examples
@@ -178,62 +212,14 @@ See also: [`addlabels!`](@ref)
 function addlabels!(
         f::Figure, text = nothing;
         dims = 2,
-        allowedblocks = [Axis, Axis3, PolarAxis],
-        recurse = [GridContent, GridLayout], kwargs...
+        allowedblocks = [Axis, Axis3, PolarAxis], kwargs...
     )
-    content = [Vector{Any}(f.layout.content)]
-    function isinrecurse(x)
-        types = typeof.(x)
-        checks = t -> any([t <: r for r in recurse])
-        return checks.(types)
+    targets = _labeltargets(f.layout, allowedblocks)
+    by = dims == 2 ? t -> (t[2][1], t[2][2]) : t -> (t[2][2], t[2][1])  # row- vs column-major
+    sort!(targets; by)
+    gridpositions = map(targets) do (block, _)
+        b = block.layoutobservables.gridcontent[]
+        b.parent[b.span.rows, b.span.cols]
     end
-    while any(isinrecurse(only(content)))
-        contents = only(content)
-        map(enumerate(contents)) do (i, c)
-            if any(isa.([c], recurse))
-                contents[i] = c.content
-            end
-        end
-        content[1] = vcat(contents...) |> Vector{Any}
-    end
-    content = only(content)
-    content = filter(content) do x
-        any(isa.([x], allowedblocks))
-    end
-    function absolute_span(b)
-        row = b.span.rows.start
-        col = b.span.cols.start
-        parent = b.parent
-        while parent isa Makie.GridLayoutBase.GridLayout && !isnothing(parent.parent)
-            gc = parent.layoutobservables.gridcontent[]
-            isnothing(gc) && break
-            row += gc.span.rows.start - 1
-            col += gc.span.cols.start - 1
-            parent = gc.parent
-        end
-        return (row, col)
-    end
-    content = map(content) do x
-        b = x.layoutobservables.gridcontent[]
-        c = b.parent[b.span.rows, b.span.cols]
-        p = absolute_span(b)
-        return c, p
-    end
-    position = last.(content)
-    content = first.(content)
-
-    # Keep one (content, position) pair per unique grid layout, preserving alignment by
-    # selecting first-occurrence indices into the ORIGINAL `content`.
-    idxs = indexin(unique(content), content)
-    content = content[idxs]
-    position = position[idxs]
-
-    if dims == 2
-        idxs = sortperm(position; by = p -> (p[1], p[2]))  # row-major
-    else
-        idxs = sortperm(position; by = p -> (p[2], p[1]))  # column-major
-    end
-    content = content[idxs]
-    position = position[idxs]
-    return addlabels!(content, f, text; kwargs...)
+    return addlabels!(gridpositions, f, text; kwargs...)
 end
