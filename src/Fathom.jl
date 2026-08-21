@@ -494,5 +494,6 @@ include("Polar.jl")
 include("Prism.jl")
 include("CovEllipse.jl")
 include("Layouts.jl")
+include("Inspect.jl")
 
 end
