@@ -103,10 +103,14 @@ export epipelagic, mesopelagic, bathypelagic, abyssopelagic
 const playa = colorant"#f5f1e8" # Playa; beach
 export playa
 
+const glas = light(mesopelagic) # Blue-green (Irish/Welsh; the colour of the sea)
+export glas
+
 const BASE_COLORS = (;
     baikal, bermejo,
     qinghai, seohae,
-    ianthina, abyad, mesopelagic, chernoe,
+    ianthina, glas,
+    abyad, chernoe,
 )
 
 const LIGHT_COLORS = map(light, BASE_COLORS)

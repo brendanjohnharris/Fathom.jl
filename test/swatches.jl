@@ -1,3 +1,8 @@
+#! /bin/bash
+# -*- mode: julia -*-
+#=
+exec julia -t auto --startup-file=no --color=yes "${BASH_SOURCE[0]}" "$@"
+=#
 using Fathom, Test, CairoMakie
 import CairoMakie.RGB
 using CairoMakie.Colors: Oklab

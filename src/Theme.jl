@@ -1,8 +1,13 @@
 """
-The Fathom colors: `baikal`, `bermejo`, `qinghai`, `seohae`, `ianthina`.
+The Fathom colors: `baikal`, `bermejo`, `qinghai`, `seohae`, `ianthina`, `glas`, `abyad`.
 """
 const colors = cgrad(
-    [baikal, bermejo, qinghai, seohae, ianthina, mesopelagic, abyad],
+    [
+        baikal, bermejo,
+        qinghai, seohae,
+        ianthina, glas,
+        abyad,
+    ],
     categorical = true
 )
 
