@@ -259,3 +259,58 @@ end
     Makie.set_theme!(fathom())
     save("./demos/default.png", Fathom.demofigure(), px_per_unit = 5)
 end
+
+@testitem "Layout inspection" setup = [Setup] begin
+    f = Fathom.demofigure()
+    ax = first(filter(x -> x isa Axis, f.content))
+
+    # drawnbox is the painted rect; for an aspect-locked axis it is smaller than the box the
+    # layout handed over, which is exactly what the slack breakdown is for.
+    @test Fathom.drawnbox(ax) == ax.scene.viewport[]
+    sl = Fathom.layoutslack(ax)
+    @test sl.total == sl.cell .+ sl.aspect
+
+    g = Figure()
+    a = Axis(g[1, 1]; width = 100, height = 100, aspect = DataAspect())
+    Axis(g[1, 2]; width = 400, height = 300)
+    resize_to_layout!(g)
+    # The fixed 100x100 axis sits in a row sized by its 300-tall neighbour, so it has cell slack
+    # in y and none in x.
+    s = Fathom.layoutslack(a)
+    @test s.cell[1] == 0
+    @test s.cell[2] > 100
+    @test fitsize(g) == size(g.scene)   # both dimensions determinable here
+
+    # A layout with a non-determinable dimension cannot be pinned, and says so.
+    h = Figure()
+    Axis(h[1, 1]; height = 120)          # width left to fill whatever it is given
+    @test fitsize(h)[1] === nothing
+    @test fitsize(h)[2] isa Int
+
+    for fn in (layouttree, layoutslack, layoutedges, layoutlabels)
+        io = IOBuffer()
+        fn(f; io)
+        @test !isempty(String(take!(io)))
+    end
+end
+
+@testitem "Detached panel labels" setup = [Setup] begin
+    # An aspect-locked axis letterboxes inside a wider cell, and addlabels! anchors the letter
+    # to the CELL, so the letter drifts off the panel. layoutslack cannot see this (it reports
+    # on axes, and the thing that moved is a label), which is what layoutlabels is for.
+    g = Figure(size = (900, 300))
+    a = Axis(g[1, 1]; height = 150, aspect = 1.0)   # cell far wider than the 150 px panel
+    Axis(g[1, 2]; width = 500, height = 150)
+    addlabels!(g)
+    io = IOBuffer()
+    layoutlabels(g; io)
+    out = String(take!(io))
+    @test occursin("detached", out)
+    @test count("detached", out) == 1               # only the letterboxed cell
+
+    # Pinning the column to the drawn width reattaches it.
+    colsize!(g.layout, 1, 150)
+    io = IOBuffer()
+    layoutlabels(g; io)
+    @test !occursin("detached", String(take!(io)))
+end

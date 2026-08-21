@@ -1,5 +1,5 @@
-export addlabels!, OnePanel, TwoPanel, FourPanel, SixPanel, NinePanel, TwelvePanel,
-    subdivide
+export addlabels!, inset!, OnePanel, TwoPanel, FourPanel, SixPanel, NinePanel,
+    TwelvePanel, subdivide
 import Makie.GridLayoutBase.GridContent
 
 # * A set of consistent figure layouts
@@ -166,6 +166,44 @@ function addlabels!(
     return
 end
 
+"""
+    inset!(pos; size = 0.55, halign = :right, valign = :top, decorate = false, kwargs...)
+
+An `Axis` floating inside the grid position `pos` rather than filling it: it takes the
+fraction `size` of the cell and is pinned to one corner, over a transparent background.
+Decorations and spines are hidden unless `decorate = true`. Remaining `kwargs` are passed
+to `Axis`. [`addlabels!`](@ref) skips insets, so the panel label stays with the main block.
+
+## Examples
+```julia
+f = Figure()
+ax = Axis(f[1, 1])
+ax2 = inset!(f[1, 1]; size = 0.4)
+```
+"""
+function inset!(
+        pos; size = 0.55, halign = :right, valign = :top, decorate = false,
+        backgroundcolor = :transparent, kwargs...
+    )
+    ax = Axis(
+        pos; width = Relative(size), height = Relative(size), halign, valign,
+        backgroundcolor, kwargs...
+    )
+    if !decorate
+        hidedecorations!(ax)
+        hidespines!(ax)
+    end
+    return ax
+end
+
+# Whether a block floats inside its cell rather than filling it, as an [`inset!`](@ref)
+# does: an explicit size *and* an off-centre alignment. Panels pinned to a common size
+# (`width`/`height` with the default centred alignment) are not insets.
+function _isinset(block)
+    sized = !isnothing(block.width[]) || !isnothing(block.height[])
+    return sized && (block.halign[] !== :center || block.valign[] !== :center)
+end
+
 # Collect `block => (row, col)` for every allowed block, accumulating absolute grid
 # positions across nested layouts in a single top-down descent.
 function _labeltargets(
@@ -178,7 +216,7 @@ function _labeltargets(
         block = gc.content
         if block isa GridLayout
             _labeltargets(block, allowed, r, c, acc)  # descend, carrying the offset
-        elseif any(block isa T for T in allowed)
+        elseif any(block isa T for T in allowed) && !_isinset(block)
             push!(acc, block => (r, c))
         end
     end
@@ -198,7 +236,8 @@ Add labels to a provided grid layout, automatically searching for blocks to labe
 - `dims`: The order in which labels are incremented; `1` increments down each column first
   (column-major), `2` increments along each row first (row-major; default).
 - `allowedblocks`: The types of blocks to consider for labelling (optional; defaults to `[Axis,
-  Axis3, PolarAxis]`). Nested `GridLayout`s are always recursed into.
+  Axis3, PolarAxis]`). Nested `GridLayout`s are always recursed into. Insets (see
+  [`inset!`](@ref)) are skipped, so a cell is labelled once regardless of what floats in it.
 - `kwargs`: Keyword arguments to be passed to the `Label` function.
 
 ## Examples

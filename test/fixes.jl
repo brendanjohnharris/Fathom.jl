@@ -111,3 +111,58 @@ end
     @test_nowarn reverselegend!(leg)
     @test leg.entrygroups[][1][2] == reverse(before)
 end
+
+@testitem "covellipse wobble" tags = [:fix] setup = [Setup] begin
+    f = Figure(); ax = Axis(f[1, 1])
+    Σ², amp = [4.0 1.0; 1.0 1.0], 0.05
+    exact = covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201).x[]
+    wobbly = covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201, wobble_amp = amp).x[]
+    @test exact != wobbly                      # the wobble moves the perimeter
+    @test wobbly[1] ≈ wobbly[end]              # ...but the outline stays closed
+    @test wobbly == covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201,
+                                wobble_amp = amp).x[]  # ...and the seed repeats it
+    ρ = [norm(sqrt(Σ²) \ collect(p)) / 2 for p in wobbly]  # radius, scale = 2
+    @test sqrt(sum(abs2, ρ .- 1) / length(ρ)) ≈ amp rtol = 0.05
+    # a higher rate crinkles more finely: more sign changes around the perimeter
+    fine = covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201, wobble_amp = amp,
+                       wobble_rate = 12).x[]
+    crossings(p) = count(!=(0), diff(sign.([norm(sqrt(Σ²) \ collect(q)) / 2 - 1
+                                            for q in p])))
+    @test crossings(fine) > crossings(wobbly)
+end
+
+@testitem "addlabels! skips insets" tags = [:fix] setup = [Setup] begin
+    f = Figure()
+    Axis(f[1, 1]); Axis(f[1, 2])
+    inset!(f[1, 1]); inset!(f[1, 2])
+    addlabels!(f)
+    labels = filter(x -> x isa Label, f.content)
+    @test length(labels) == 2                       # one per cell, not per axis
+    @test Set(l.text[] for l in labels) == Set(["(a)", "(b)"])
+    # panels pinned to a common size are centred, so they are not insets
+    g = Figure()
+    Axis(g[1, 1]; width = 100, height = 100); Axis(g[1, 2]; width = 100, height = 100)
+    addlabels!(g)
+    @test count(x -> x isa Label, g.content) == 2
+end
+
+@testitem "inset!" tags = [:fix] setup = [Setup] begin
+    f = Figure(); ax = Axis(f[1, 1])
+    ins = inset!(f[1, 1]; size = 0.4, halign = :left, valign = :bottom)
+    @test ins.width[] == Relative(0.4) && ins.height[] == Relative(0.4)
+    @test ins.halign[] === :left && ins.valign[] === :bottom
+    @test Fathom._isinset(ins) && !Fathom._isinset(ax)
+    @test !ins.xticksvisible[]                      # decorations hidden by default
+    @test inset!(f[1, 1]; decorate = true).xticksvisible[]
+end
+
+@testitem "ellipsecov" tags = [:fix] setup = [Setup] begin
+    Σ² = ellipsecov(3, 1, π / 4)
+    @test issymmetric(Σ²)
+    @test sort(eigvals(Σ²)) ≈ [1.0, 9.0]
+    @test abs(dot(normalize(eigvecs(Σ²)[:, 2]), [cos(π / 4), sin(π / 4)])) ≈ 1
+    f = Figure(); ax = Axis(f[1, 1])          # the 1σ ellipse has the requested semi-axes
+    p = covellipse!(ax, [0.0, 0.0], Σ²; scale = 1, vertices = 721).x[]
+    @test maximum(norm, p) ≈ 3 rtol = 1.0e-4
+    @test minimum(norm, p) ≈ 1 rtol = 1.0e-4
+end
