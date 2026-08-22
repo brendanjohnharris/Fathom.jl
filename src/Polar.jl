@@ -209,7 +209,7 @@ function Makie.plot!(plot::PolarDensity{<:Tuple{AbstractVector{<:Real}}})
     end
     band!(
         plot, plot.attributes, plot.xs, plot.zs, plot.ps; color = plot.real_color,
-        strokecolor = nothing
+        strokecolor = :transparent, strokewidth = 0 # stroke is drawn by the lines! below
     )
 
     lines!(
