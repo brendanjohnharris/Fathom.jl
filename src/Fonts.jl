@@ -10,16 +10,17 @@ const mathbase = joinpath(FONT_DIR, "STIXTwoMath")
 function fathomfonts(font = :sans)
     return if font === :sans
 
+        # LaTeXStrings render fully in STIX serif (plain theme text stays Source Sans below)
         Makie.MathTeXEngine.set_texfont_family!(;
-            regular = joinpath(sansbase, "SourceSans3-Regular.ttf"),
-            bold = joinpath(sansbase, "SourceSans3-Bold.ttf"),
-            italic = joinpath(sansbase, "SourceSans3-Italic.ttf"),
-            bolditalic = joinpath(sansbase, "SourceSans3-BoldItalic.ttf"),
-            medium = joinpath(sansbase, "SourceSans3-Medium.ttf"),
-            mediumitalic = joinpath(sansbase, "SourceSans3-MediumItalic.ttf"),
-            semibold = joinpath(sansbase, "SourceSans3-SemiBold.ttf"),
-            semibolditalic = joinpath(sansbase, "SourceSans3-SemiBoldItalic.ttf"),
-            math = joinpath(mathbase, "STIXTwoMath-Regular.ttf") # Math stays stix
+            regular = joinpath(stixbase, "STIXTwoText-Regular.ttf"),
+            bold = joinpath(stixbase, "STIXTwoText-Bold.ttf"),
+            italic = joinpath(stixbase, "STIXTwoText-Italic.ttf"),
+            bolditalic = joinpath(stixbase, "STIXTwoText-BoldItalic.ttf"),
+            medium = joinpath(stixbase, "STIXTwoText-Medium.ttf"),
+            mediumitalic = joinpath(stixbase, "STIXTwoText-MediumItalic.ttf"),
+            semibold = joinpath(stixbase, "STIXTwoText-SemiBold.ttf"),
+            semibolditalic = joinpath(stixbase, "STIXTwoText-SemiBoldItalic.ttf"),
+            math = joinpath(mathbase, "STIXTwoMath-Regular.ttf")
         )
 
         Attributes(
