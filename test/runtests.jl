@@ -64,6 +64,53 @@ end
     display(f)
 end
 
+@testitem "SVGImage plot" setup = [Setup] begin
+    using Rsvg # loads FathomRsvgExt alongside CairoMakie
+
+    # Blue canvas with a red circle in the upper-left quadrant, so a y-flip shows up.
+    svg = """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
+      <rect x="0" y="0" width="200" height="100" fill="#0000ff"/>
+      <circle cx="50" cy="25" r="20" fill="#ff0000"/>
+    </svg>
+    """
+    @test Fathom.svgsize(svg) == (200.0, 100.0)
+    @test !isnothing(Base.get_extension(Fathom, :FathomRsvgExt))
+
+    # Vector pass-through: librsvg's paths land in the saved SVG, not a rasterised <image>.
+    f = Figure(size = (400, 300))
+    ax = Axis(f[1, 1]; aspect = DataAspect())
+    hidedecorations!(ax)
+    p = svgimage!(ax, svg)
+    @test p.x[] == (0.0, 200.0) && p.y[] == (0.0, 100.0) # default extents = intrinsic size
+    out = mktempdir()
+    save(joinpath(out, "svgimage.svg"), f)
+    saved = read(joinpath(out, "svgimage.svg"), String)
+    @test !occursin("<image", saved)
+    @test occursin(r"rgb\(100%,\s*0%,\s*0%\)"i, saved)
+
+    # Data-space placement and orientation, checked by pixel.
+    f = Figure(size = (400, 300))
+    ax = Axis(f[1, 1]; limits = ((0, 4), (0, 2)))
+    svgimage!(ax, (1, 3), (0.5, 1.5), svg)
+    img = colorbuffer(f)
+    dpx = function (x, y) # data coordinates -> colorbuffer index
+        p = Makie.project(ax.scene, Point2f(x, y)) .+ minimum(ax.scene.viewport[])
+        s = size(img, 2) / size(f.scene)[1]
+        CartesianIndex(round(Int, size(img, 1) - s * p[2]), round(Int, s * p[1]))
+    end
+    @test RGBf(img[dpx(1.5, 1.25)]).r > 0.8       # circle centre, upper-left of the rect
+    @test RGBf(img[dpx(1.5, 0.75)]).b > 0.8       # canvas below it
+    @test RGBf(img[dpx(0.5, 1.0)]).g > 0.8        # background outside the rect
+
+    # visible = false draws nothing.
+    f = Figure(size = (400, 300))
+    ax = Axis(f[1, 1]; limits = ((0, 4), (0, 2)))
+    svgimage!(ax, (1, 3), (0.5, 1.5), svg; visible = false)
+    img = colorbuffer(f)
+    @test !any(c -> (c = RGBf(c); c.b > 0.8 && c.r < 0.2 && c.g < 0.2), img)
+end
+
 @testitem "Polar histogram" setup = [Setup] begin
     x = [rand(Distributions.VonMises(-3, 10), 10000); rand(VonMises(1, 10), 10000)]
 

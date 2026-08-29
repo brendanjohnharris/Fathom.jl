@@ -172,3 +172,84 @@ function Makie.plot!(
         strokecolor = plot.strokecolor
     )
 end
+
+"Contents of the SVG document `svg`, given either as a file path or as the source itself."
+readsvg(svg::AbstractString) = occursin("<svg", svg) ? String(svg) : read(svg, String)
+
+"""
+    svgsize(svg::AbstractString)
+
+Intrinsic size of an SVG document, from its `viewBox` (or failing that, `width`/`height`)
+attributes. Parsed textually so it needs no SVG library; used only for the default extents of
+[`svgimage`](@ref), where a mis-parse costs the default aspect ratio, not the rendering.
+"""
+function svgsize(svg::AbstractString)
+    vb = match(r"<svg[^>]*\sviewBox\s*=\s*[\"']([^\"']+)[\"']"i, svg)
+    if !isnothing(vb)
+        nums = tryparse.(Float64, split(strip(vb[1]), r"[\s,]+"))
+        length(nums) == 4 && !any(isnothing, nums) && return (nums[3], nums[4])
+    end
+    w, h = map(("width", "height")) do attr
+        m = match(Regex("<svg[^>]*\\s$(attr)\\s*=\\s*[\"']([0-9.eE+-]+)[a-z%]*[\"']", "i"), svg)
+        isnothing(m) ? nothing : tryparse(Float64, m[1])
+    end
+    (isnothing(w) || isnothing(h)) && return (1.0, 1.0)
+    return (w, h)
+end
+
+"""
+    svgimage(svg; kwargs...)
+    svgimage(x, y, svg; kwargs...)
+
+Draws an SVG document as true vector graphics into the rectangle spanned by `x` and `y` in data
+space (intervals, tuples, or vectors; by default `0 .. width` and `0 .. height` from the
+document's intrinsic size, matching `image`). `svg` is a file path or the SVG source itself.
+Set `aspect = DataAspect()` on the axis to display the document undistorted.
+
+Drawing requires the `FathomRsvgExt` extension: load `Rsvg` alongside `CairoMakie`, and the
+document is painted by librsvg directly onto the Cairo surface, so `.svg` and `.pdf` saves keep
+it vector while `.png` rasterises it at the surface resolution (a miniature MakieTeX, without
+its Makie version pin). Other backends draw nothing.
+
+# Example
+```julia
+using CairoMakie, Rsvg
+fig = Figure()
+ax = Axis(fig[1, 1]; aspect = DataAspect())
+hidedecorations!(ax)
+svgimage!(ax, "logo.svg")
+```
+"""
+@recipe SVGImage (x, y, svg) begin
+    mixin_generic_plot_attributes()...
+end
+
+function Makie.convert_arguments(::Type{<:SVGImage}, svg::AbstractString)
+    s = readsvg(svg)
+    w, h = svgsize(s)
+    return ((0.0, w), (0.0, h), s)
+end
+function Makie.convert_arguments(::Type{<:SVGImage}, x, y, svg::AbstractString)
+    return (Float64.(extrema(x)), Float64.(extrema(y)), readsvg(svg))
+end
+
+function Makie.plot!(plot::SVGImage)
+    # Invisible child so every backend sees an atomic to walk; the actual drawing is
+    # CairoMakie-specific, in FathomRsvgExt.
+    map!(plot.attributes, [:x, :y], :rectpoints) do x, y
+        Point2d[(x[1], y[1]), (x[2], y[1]), (x[2], y[2]), (x[1], y[2])]
+    end
+    poly!(plot, plot.rectpoints; color = :transparent, strokewidth = 0, visible = false)
+    if isnothing(Base.get_extension(Fathom, :FathomRsvgExt))
+        @warn "svgimage draws nothing without the FathomRsvgExt extension: load `Rsvg` together with `CairoMakie`" maxlog = 1
+    end
+    return plot
+end
+
+function Makie.data_limits(plot::SVGImage)
+    (x0, x1), (y0, y1) = plot.x[], plot.y[]
+    return Rect3d(Point3d(x0, y0, 0), Vec3d(x1 - x0, y1 - y0, 0))
+end
+function Makie.boundingbox(plot::SVGImage, space::Symbol = :data)
+    return Makie.apply_transform_and_model(plot, Makie.data_limits(plot))
+end
