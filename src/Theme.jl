@@ -32,7 +32,7 @@ decoration_color = dark(abyad)
 textcolor = :black
 tickalign = 0.5 # Crosses the axis
 
-function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize())
+function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(), titlesize = globalfontsize * 1.25)
     return Theme(;
         colormap = sunrise,
         strokewidth = 5,
@@ -86,9 +86,9 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
             ylabelpadding = 3,
             palette,
             titlefont = :bold,
-            titlesize = globalfontsize * 1.25,
-            xlabelsize = globalfontsize * 1.25,
-            ylabelsize = globalfontsize * 1.25,
+            titlesize = titlesize,
+            xlabelsize = titlesize,
+            ylabelsize = titlesize,
         ),
         Legend = (;
             framevisible = false,
@@ -128,10 +128,10 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
             ytickalign = tickalign,
             ztickalign = tickalign,
             titlefont = :bold,
-            titlesize = globalfontsize * 1.25,
-            xlabelsize = globalfontsize * 1.25,
-            ylabelsize = globalfontsize * 1.25,
-            zlabelsize = globalfontsize * 1.25,
+            titlesize = titlesize,
+            xlabelsize = titlesize,
+            ylabelsize = titlesize,
+            zlabelsize = titlesize,
             palette,
         ),
         PolarAxis = (;
@@ -192,7 +192,7 @@ function _fathom(; globalfonts = fathomfonts(), globalfontsize = fathomfontsize(
         ),
         Label = (;
             valign = :top, halign = :left, font = :bold,
-            fontsize = globalfontsize * 1.25,
+            fontsize = titlesize,
         )
     )
 end
