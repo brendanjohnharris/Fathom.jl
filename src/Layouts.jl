@@ -133,7 +133,7 @@ display(f)
 """
 function addlabels!(
         gridpositions, f::Figure = first(gridpositions).layout.parent,
-        text = nothing; dx = 0, dy = 0, fontsize = 22, kwargs...
+        text = nothing; dx = 0, dy = 0, fontsize = fathomfontsize() * 1.2, kwargs...
     )
     if !(eltype(gridpositions) <: GridPosition)
         throw(TypeError(:addlabels!, "Fathom", GridPosition, first(gridpositions)))
