@@ -119,15 +119,13 @@ end
     wobbly = covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201, wobble_amp = amp).x[]
     @test exact != wobbly                      # the wobble moves the perimeter
     @test wobbly[1] ≈ wobbly[end]              # ...but the outline stays closed
-    @test wobbly == covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201,
-                                wobble_amp = amp).x[]  # ...and the seed repeats it
-    ρ = [norm(sqrt(Σ²) \ collect(p)) / 2 for p in wobbly]  # radius, scale = 2
+    @test wobbly == covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201, wobble_amp = amp).x[]  # ...and the seed repeats it
+    radius(ps) = [norm(sqrt(Σ²) \ collect(p)) / 2 for p in ps]  # scale = 2
+    ρ = radius(wobbly)
     @test sqrt(sum(abs2, ρ .- 1) / length(ρ)) ≈ amp rtol = 0.05
     # a higher rate crinkles more finely: more sign changes around the perimeter
-    fine = covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201, wobble_amp = amp,
-                       wobble_rate = 12).x[]
-    crossings(p) = count(!=(0), diff(sign.([norm(sqrt(Σ²) \ collect(q)) / 2 - 1
-                                            for q in p])))
+    fine = covellipse!(ax, [0.0, 0.0], Σ²; vertices = 201, wobble_amp = amp, wobble_rate = 12).x[]
+    crossings(ps) = count(!=(0), diff(sign.(radius(ps) .- 1)))
     @test crossings(fine) > crossings(wobbly)
 end
 

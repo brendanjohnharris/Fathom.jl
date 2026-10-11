@@ -6,6 +6,11 @@
 [![code style: runic](https://img.shields.io/badge/code_style-%E1%9A%B1%E1%9A%A2%E1%9A%BE%E1%9B%81%E1%9A%B2-black)](https://github.com/fredrikekre/Runic.jl)
 
 A Makie theme and some utilities.
+# Installation
+```Julia
+using Pkg
+Pkg.add(url = "https://github.com/brendanjohnharris/Fathom.jl")
+```
 # Usage
 ```Julia
 using CairoMakie
@@ -19,7 +24,7 @@ fig = Fathom.demofigure()
 Any combination of the keywords below can be used to customise the theme.
 ### Dark
 ```Julia
-fathom(:dark, :transparent) |> Makie.set_theme!
+fathom(:dark) |> Makie.set_theme!
 fig = Fathom.demofigure()
 ```
 ![demo](test/demos/dark.png)
