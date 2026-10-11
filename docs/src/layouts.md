@@ -60,3 +60,18 @@ gs = subdivide(f, 3, 2)
 addlabels!(gs)
 f
 ```
+
+## Insets
+
+```@example Fathom
+f = TwoPanel()
+ax = Axis(f[1, 1])
+lines!(ax, cumsum(randn(1000)))
+ax2 = inset!(f[1, 1]; size = 0.4, decorate = true)
+lines!(ax2, cumsum(randn(100)))
+f
+```
+
+```@docs
+inset!
+```

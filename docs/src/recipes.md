@@ -18,7 +18,7 @@ Makie.set_theme!(Fathom.fathom())
 
 # Recipes
 
-## [ziggurat](@ref)
+## [`ziggurat`](@ref)
 
 ```@shortdocs; canonical=false
 ziggurat
@@ -30,7 +30,7 @@ ziggurat(x)
 ```
 
 
-## [bandwidth](@ref)
+## [`bandwidth`](@ref)
 
 ```@shortdocs; canonical=false
 bandwidth
@@ -41,7 +41,7 @@ x = -π:0.1:π
 bandwidth(x, sin.(x); bandwidth = sin.(x))
 ```
 
-## [polarhist](@ref)
+## [`polarhist`](@ref)
 
 ```@shortdocs; canonical=false
 polarhist
@@ -51,7 +51,7 @@ polarhist
 polarhist(randn(1000) .* 2)
 ```
 
-## [polardensity](@ref)
+## [`polardensity`](@ref)
 
 ```@shortdocs; canonical=false
 polardensity
@@ -65,7 +65,7 @@ polardensity(randn(1000) .* 2;
                  colormap=:viridis)
 ```
 
-## [covellipse](@ref)
+## [`covellipse`](@ref)
 
 ```@shortdocs; canonical=false
 covellipse
